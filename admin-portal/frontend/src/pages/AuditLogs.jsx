@@ -101,8 +101,9 @@ export default function AuditLogs() {
       className: 'w-48',
       render: (log) => {
         const u = log.user || log.userId;
-        const name = typeof u === 'object' ? u.name || u.email : u;
-        const role = typeof u === 'object' ? u.role : null;
+        const isObj = Boolean(u && typeof u === 'object');
+        const name = isObj ? (u.name || u.email) : (u || 'System / Automated');
+        const role = isObj ? u.role : null;
         return (
           <div>
             <span className="font-semibold text-slate-800 text-xs block truncate">

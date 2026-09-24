@@ -212,8 +212,10 @@ export function DocumentDetailPage() {
                 <dd className="font-mono text-slate-700 mt-0.5">{formatFileSize(document.fileSize || document.size)}</dd>
               </div>
               <div>
-                <dt className="text-slate-500 font-medium">Operator ID</dt>
-                <dd className="font-mono text-slate-700 mt-0.5">{document.uploadedBy || document.operatorId || 'Operator'}</dd>
+                <dt className="text-slate-500 font-medium">Operator</dt>
+                <dd className="font-mono text-slate-700 mt-0.5">
+                  {typeof document.uploadedBy === 'object' ? (document.uploadedBy?.name || document.uploadedBy?._id) : (document.uploadedBy || document.operatorId || 'Operator')}
+                </dd>
               </div>
             </dl>
           </div>

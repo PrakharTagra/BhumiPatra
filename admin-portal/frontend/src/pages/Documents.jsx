@@ -425,7 +425,9 @@ export default function Documents() {
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-semibold">Owner / Claimant Name</span>
-                  <p className="font-medium text-slate-900 mt-0.5">{selectedDoc.ownerName || selectedDoc.owner || '—'}</p>
+                  <p className="font-medium text-slate-900 mt-0.5">
+                    {selectedDoc.ownerName || (Array.isArray(selectedDoc.owner) ? selectedDoc.owner.map(o => o?.name || o).filter(Boolean).join(', ') : (typeof selectedDoc.owner === 'object' ? selectedDoc.owner?.name : selectedDoc.owner)) || '—'}
+                  </p>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-semibold">Ingestion Timestamp</span>
@@ -437,32 +439,44 @@ export default function Documents() {
             </div>
 
             {/* Operator and Officer Assignment */}
-            <div>
-              <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-2.5 border-b pb-1">
-                Workflow Participants
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <span className="text-[10px] text-slate-500 font-semibold uppercase block">Digitization Operator</span>
-                  <p className="font-medium text-slate-800 mt-1">
-                    {selectedDoc.operator?.name || selectedDoc.operatorName || selectedDoc.uploadedBy || 'System / Auto-Ingestion'}
-                  </p>
-                  {selectedDoc.operator?.email && (
-                    <span className="text-[11px] text-slate-500">{selectedDoc.operator.email}</span>
-                  )}
-                </div>
+            {(() => {
+              const opObj = selectedDoc.operator || (typeof selectedDoc.uploadedBy === 'object' ? selectedDoc.uploadedBy : null);
+              const opName = opObj?.name || selectedDoc.operatorName || (typeof selectedDoc.uploadedBy === 'string' ? selectedDoc.uploadedBy : null) || 'System / Auto-Ingestion';
+              const opEmail = opObj?.email || null;
 
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <span className="text-[10px] text-slate-500 font-semibold uppercase block">Verification Officer</span>
-                  <p className="font-medium text-slate-800 mt-1">
-                    {selectedDoc.verifier?.name || selectedDoc.verifierName || (selectedDoc.verificationStatus === 'VERIFIED' ? 'Verified Officer' : 'Unassigned / Pending')}
-                  </p>
-                  {selectedDoc.verifier?.email && (
-                    <span className="text-[11px] text-slate-500">{selectedDoc.verifier.email}</span>
-                  )}
+              const verObj = selectedDoc.verifier || (typeof selectedDoc.verifiedBy === 'object' ? selectedDoc.verifiedBy : null);
+              const verName = verObj?.name || selectedDoc.verifierName || (typeof selectedDoc.verifiedBy === 'string' ? selectedDoc.verifiedBy : null) || (selectedDoc.verificationStatus === 'VERIFIED' ? 'Verified Officer' : 'Unassigned / Pending');
+              const verEmail = verObj?.email || null;
+
+              return (
+                <div>
+                  <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-2.5 border-b pb-1">
+                    Workflow Participants
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-semibold uppercase block">Digitization Operator</span>
+                      <p className="font-medium text-slate-800 mt-1">
+                        {opName}
+                      </p>
+                      {opEmail && (
+                        <span className="text-[11px] text-slate-500">{opEmail}</span>
+                      )}
+                    </div>
+
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-semibold uppercase block">Verification Officer</span>
+                      <p className="font-medium text-slate-800 mt-1">
+                        {verName}
+                      </p>
+                      {verEmail && (
+                        <span className="text-[11px] text-slate-500">{verEmail}</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Failure or Rejection Details (if applicable) */}
             {(selectedDoc.failureReason || selectedDoc.rejectionReason) && (
