@@ -160,9 +160,7 @@ export default function DocumentViewer({
           zoom > 100 ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-default'
         }`}
         style={{
-          backgroundColor: '#0b1320',
-          backgroundImage: 'radial-gradient(#1e293b 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
+          backgroundColor: '#0f172a',
         }}
       >
         <div
@@ -186,42 +184,26 @@ export default function DocumentViewer({
               />
             )
           ) : (
-            /* Document Scan Placeholder Graphic when URL is not yet attached by backend */
-            <div className="w-[500px] h-[680px] bg-white rounded-lg p-8 shadow-2xl border border-slate-300 text-slate-800 flex flex-col justify-between">
-              <div className="border-b-2 border-slate-800 pb-3 text-center">
-                <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                  BhumiPatra Digital Archive
+            <div className="w-[500px] h-[680px] bg-white rounded-lg p-8 shadow-md border border-slate-300 text-slate-800 flex flex-col justify-between">
+              <div className="border-b border-slate-200 pb-3 text-center">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  BhumiPatra
                 </div>
-                <div className="text-base font-bold text-navy-950 mt-1">
-                  LAND PARCEL RECORD INSTRUMENT
+                <div className="text-base font-semibold text-slate-900 mt-1">
+                  Land Record Document
                 </div>
                 <div className="text-[10px] text-slate-500">
-                  Original Certified Scanned Copy &bull; Page {page}
+                  Page {page}
                 </div>
               </div>
 
-              <div className="space-y-4 text-xs font-mono py-6 opacity-85">
-                <div className="h-3 bg-slate-200 rounded w-3/4" />
-                <div className="h-3 bg-slate-100 rounded w-full" />
-                <div className="h-3 bg-slate-200 rounded w-5/6" />
-                <div className="grid grid-cols-2 gap-4 my-6 p-4 border border-dashed border-slate-300 rounded">
-                  <div className="space-y-2">
-                    <div className="h-2 bg-slate-200 rounded w-1/2" />
-                    <div className="h-3 bg-slate-300 rounded w-3/4" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-2 bg-slate-200 rounded w-1/2" />
-                    <div className="h-3 bg-slate-300 rounded w-3/4" />
-                  </div>
-                </div>
-                <div className="h-3 bg-slate-100 rounded w-full" />
-                <div className="h-3 bg-slate-200 rounded w-2/3" />
-                <div className="h-3 bg-slate-100 rounded w-4/5" />
+              <div className="text-center py-20 text-slate-400 text-sm">
+                <FileText className="w-12 h-12 mx-auto mb-2 text-slate-300" />
+                No document file preview available
               </div>
 
-              <div className="pt-4 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400">
-                <span>SEAL: VERIFIED INGESTION</span>
-                <span>AUTHENTICITY GUARANTEED</span>
+              <div className="pt-3 border-t border-slate-200 text-center text-[10px] text-slate-400">
+                Land Record Management Portal
               </div>
             </div>
           )}

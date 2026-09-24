@@ -83,7 +83,7 @@ export const StatusBadge = ({ status, type = 'processing', size = 'sm' }) => {
     case 'OCR_IN_PROGRESS':
       return (
         <Badge variant="purple" size={size} icon={Eye} className="animate-pulse">
-          OCR
+          Processing
         </Badge>
       );
     case 'EXTRACTION':

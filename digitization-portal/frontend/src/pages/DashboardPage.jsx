@@ -161,7 +161,6 @@ export function DashboardPage() {
             <StatCard
               title="Total Uploaded"
               value={stats.total}
-              subtext="Legacy land records"
               icon={Files}
               variant="primary"
             />
@@ -170,7 +169,6 @@ export function DashboardPage() {
             <StatCard
               title="Processing"
               value={stats.processing}
-              subtext="In progress"
               icon={Cpu}
               variant="processing"
             />
@@ -179,7 +177,6 @@ export function DashboardPage() {
             <StatCard
               title="Processed"
               value={stats.processed}
-              subtext="Completed"
               icon={CheckCircle2}
               variant="success"
             />
@@ -188,7 +185,6 @@ export function DashboardPage() {
             <StatCard
               title="Needs Verification"
               value={stats.needsVerification}
-              subtext="Awaiting review"
               icon={AlertTriangle}
               variant="warning"
             />
@@ -197,7 +193,6 @@ export function DashboardPage() {
             <StatCard
               title="Failed"
               value={stats.failed}
-              subtext="Error"
               icon={XCircle}
               variant="danger"
             />

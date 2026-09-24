@@ -124,12 +124,17 @@ async function runTest() {
   // 9. Operator uploads a document
   console.log('\n[9] Operator Uploading Land Record Document...');
   let fileBytes;
-  let filename = 'Khatauni_Parcel_142.png';
-  let mimeType = 'image/png';
+  let filename = 'Khatauni_Ghaziabad_127_2.pdf';
+  let mimeType = 'application/pdf';
+  const samplePdfPath = path.resolve('backend/uploads/records/ghaziabad/DOC-20260924-5112F16C.pdf');
   const imgPath = path.resolve('document-analysis-engine/test_scanned_khatauni.png');
   const pdfPath = path.resolve('test_valid_land_record.pdf');
 
-  if (fs.existsSync(imgPath)) {
+  if (fs.existsSync(samplePdfPath)) {
+    fileBytes = fs.readFileSync(samplePdfPath);
+    filename = 'Khatauni_Ghaziabad_127_2.pdf';
+    mimeType = 'application/pdf';
+  } else if (fs.existsSync(imgPath)) {
     fileBytes = fs.readFileSync(imgPath);
     filename = 'Khatauni_Parcel_142.png';
     mimeType = 'image/png';
@@ -170,16 +175,16 @@ async function runTest() {
   const docId = uploadData.data.documentId || uploadData.data._id;
   const mongoDocId = uploadData.data._id;
 
-  // 10. Operator triggers AI processing
-  console.log('\n[10] Operator Triggering AI Digitization Pipeline...');
+  // 10. Operator triggers processing
+  console.log('\n[10] Operator Triggering Document Processing...');
   const processRes = await request(`/api/documents/${docId}/process`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${opToken}` },
   });
   console.log(`Process Status: ${processRes.status}, Status: ${processRes.data?.data?.processingStatus}`);
 
-  // Wait 3 seconds for pipeline to complete
-  console.log('Waiting 3.5s for autonomous background extraction pipeline...');
+  // Wait 3.5 seconds for processing to complete
+  console.log('Waiting 3.5s for background document processing...');
   await new Promise((r) => setTimeout(r, 3500));
 
   // Check Document Status

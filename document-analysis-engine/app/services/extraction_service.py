@@ -115,6 +115,9 @@ class ExtractionService:
             r'(?:Khasra|Gata)[\s]*(?:No\.?|Number|#)?[:\s-]*([0-9]+(?:/[0-9]+)?)',
             r'\b(?:खसरा|गाटा)\s+([०-९0-9]+[/\-०-९0-9]*)',
             r'\b(?:Khasra|Gata)\s+([0-9]+[/\-0-9]*)',
+            r'(?i)\b(?:Khasra|Gata|खसरा|गाटा)[\s]*(?:No\.?|Number|संख्या|नं\.?|नंबर)?[:\s\n-]+([0-9०-९]+(?:/[0-9०-९]+)?)',
+            r'(?i)Khasra\s*No\.?[\s\S]*?Khata\s*No\.?[\s\S]*?\n([0-9०-९]+(?:/[0-9०-९]+)?)\n([0-9०-९]+)',
+            r'(?m)^\s*1\s*$\n([0-9०-९]+(?:/[0-9०-९]+)?)\n[0-9०-९]+(?:\.[0-9०-९]+)?',
         ]
 
         for pat in patterns:
@@ -130,7 +133,7 @@ class ExtractionService:
                     requiresVerification=bool(conf < 0.80),
                     bbox=bbox,
                     page=page,
-                    evidence=m.group(0),
+                    evidence=m.group(0)[:80],
                 )
 
         return FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
@@ -142,6 +145,8 @@ class ExtractionService:
             r'(?:खाता|खतौनी)[\s]*(?:संख्या|नं\.?|नंबर)?[:\s-]*([०-९0-9]+)',
             r'(?:Khata|Khatauni)[\s]*(?:No\.?|Number)?[:\s-]*([0-9]+)',
             r'\b(?:खाता|खतौनी)\s+([०-९0-9]+)',
+            r'(?i)\b(?:Khata|Khatauni|खाता|खतौनी)[\s]*(?:No\.?|Number|संख्या|नं\.?|नंबर)?[:\s\n-]+([0-9०-९]+)',
+            r'(?i)Khata\s*No\.?[\s\S]*?\n(?:[0-9०-९/]+\n)?([0-9०-९]+)',
         ]
 
         for pat in patterns:
@@ -157,7 +162,7 @@ class ExtractionService:
                     requiresVerification=bool(conf < 0.80),
                     bbox=bbox,
                     page=page,
-                    evidence=m.group(0),
+                    evidence=m.group(0)[:80],
                 )
 
         return FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
@@ -229,6 +234,8 @@ class ExtractionService:
         patterns = [
             r'(?:क्षेत्रफल|रकबा|Area)[\s]*[:\s-]*([०-९0-9]+(?:\.[०-९0-9]+)?)[\s]*(हेक्टेयर|हैक्टेयर|एकड़|बीघा|वर्ग मीटर|Hectare|Acre|Bigha|Sq\.?\s*Mtr)?',
             r'([०-९0-9]+(?:\.[०-९0-9]+)?)[\s]*(हेक्टेयर|हैक्टेयर|Hectare|एकड़|Acre|बीघा|Bigha)',
+            r'(?i)(?:Area|क्षेत्रफल|रकबा)[\s]*[:\s\n-]*([0-9०-९]+(?:\.[0-9०-९]+)?)[\s\n]*(Hectare|Acre|Bigha|हेक्टेयर|हैक्टेयर|एकड़|बीघा)?',
+            r'(?m)^\s*1\s*$\n[0-9०-९]+(?:/[0-9०-९]+)?\n([0-9०-९]+(?:\.[0-9०-९]+)?)\n(Hectare|Acre|Bigha|हेक्टेयर|हैक्टेयर|एकड़|बीघा)?',
         ]
 
         for pat in patterns:
@@ -256,7 +263,7 @@ class ExtractionService:
                     requiresVerification=bool(conf < 0.80),
                     bbox=bbox,
                     page=page,
-                    evidence=m.group(0),
+                    evidence=m.group(0)[:80],
                     unit=unit_clean,
                 )
                 unit_res = FieldExtractionResult(
@@ -277,41 +284,70 @@ class ExtractionService:
     def _extract_owners(
         self, all_tokens: List[Tuple[int, OCRToken]], text: str
     ) -> Tuple[FieldExtractionResult, FieldExtractionResult]:
-        patterns = [
-            r'(?:खातेदार|काश्तकार|भूस्वामी|पट्टाधारक|मालिक)[\s]*(?:का[\s]*नाम)?[:\s-]*([^\n,/\(\)]{3,50})',
-            r'(?:Owner|Tenure Holder|Khatedar|Pattadar)[\s]*(?:Name)?[:\s-]*([^\n,/\(\)]{3,50})',
-            r'(?:नाम खातेदार)[:\s-]*([^\n,/\(\)]{3,50})',
-        ]
-
         owner_name = None
         owner_evidence = None
         bbox = None
         page = 1
         conf = 0.0
+        co_owners_list = []
 
-        for pat in patterns:
-            m = re.search(pat, text, re.IGNORECASE)
+        # 1. Key-value on single line (no newline between key and value): e.g. Owner Name: Rameshwar Dayal Sharma
+        kv_patterns = [
+            r'(?i)\b(?:Owner(?:\s*Name)?|Name\s*of\s*Landholder|Tenure\s*Holder|Khatedar|Pattadar|खातेदार(?:\s*का\s*नाम)?|नाम\s*खातेदार|भूस्वामी)[ \t]*[:\-][ \t]*([^\n,/\(\)]{3,50})',
+            r'(?:खातेदार|काश्तकार|भूस्वामी|पट्टाधारक|मालिक)[\s]*(?:का[\s]*नाम)?[ \t]*[:\-][ \t]*([^\n,/\(\)]{3,50})',
+        ]
+
+        for pat in kv_patterns:
+            m = re.search(pat, text)
             if m:
                 raw_owner = m.group(1).strip()
-                # Clean up punctuation
                 clean_owner = re.sub(r'^[^\w\u0900-\u097F]+|[^\w\u0900-\u097F]+$', '', raw_owner)
-                if len(clean_owner) >= 3 and not re.search(r'^(संख्या|नम्बर|ग्राम|तहसील)', clean_owner):
+                # Ensure it's not a generic table header
+                if len(clean_owner) >= 3 and not re.search(r'(?i)\b(DETAILS|RECORD|SECTION|DESCRIPTION|NUMBER|संख्या|नम्बर|ग्राम|तहसील)\b', clean_owner):
                     owner_name = clean_owner
                     owner_evidence = m.group(0)
                     bbox, page, ocr_conf = self._find_matching_token(all_tokens, clean_owner)
-                    conf = float(round(min(0.95, max(0.65, ocr_conf)), 2))
+                    conf = float(round(min(0.96, max(0.65, ocr_conf)), 2))
                     break
 
+        # 2. Table row format (Row 1): e.g. 1\nRajesh Kumar\nMahesh Kumar
+        if not owner_name:
+            m_row1 = re.search(r'(?m)^\s*1\s*$\n([^\n\d/:\(\)]{3,35})\n([^\n\d/:\(\)]{3,35})?', text)
+            if m_row1:
+                cand = m_row1.group(1).strip()
+                if not re.search(r'(?i)\b(Khasra|Khata|Details|Name|Area|Village|Tehsil|State|District)\b', cand):
+                    owner_name = cand
+                    owner_evidence = m_row1.group(0)
+                    bbox, page, ocr_conf = self._find_matching_token(all_tokens, cand)
+                    conf = float(round(min(0.96, max(0.65, ocr_conf)), 2))
+
+                    # Check for co-owner in row 2
+                    m_row2 = re.search(r'(?m)^\s*2\s*$\n([^\n\d/:\(\)]{3,35})', text)
+                    if m_row2:
+                        cand2 = m_row2.group(1).strip()
+                        if not re.search(r'(?i)\b(Khasra|Khata|Details|Name|Area)\b', cand2):
+                            co_owners_list.append(cand2)
+
+        # 3. Field-level record table format: Khasra No / Khata No / Owner Name
+        if not owner_name:
+            m_field_table = re.search(r'(?i)Owner\s*Name[\s\S]*?Area[\s\S]*?\n(?:[0-9०-९/]+\n[0-9०-९]+\n)([^\n\d/:\(\)]{3,35})', text)
+            if m_field_table:
+                cand = m_field_table.group(1).strip()
+                owner_name = cand
+                owner_evidence = m_field_table.group(0)
+                bbox, page, ocr_conf = self._find_matching_token(all_tokens, cand)
+                conf = float(round(min(0.95, max(0.65, ocr_conf)), 2))
+
         if owner_name:
-            # Check for co-owners mentioned after comma or 'व' or 'एवं'
-            co_owners_list = []
+            # Check for inline co-owners mentioned after comma or 'व' or 'एवं'
             co_pat = r'(?:व|एवं|,|/)\s*([^\n,/\(\)]{3,40})'
             co_matches = re.finditer(co_pat, owner_evidence or "")
             for cm in co_matches:
                 co_cand = cm.group(1).strip()
                 co_cand = re.sub(r'^[^\w\u0900-\u097F]+|[^\w\u0900-\u097F]+$', '', co_cand)
-                if len(co_cand) >= 3 and co_cand != owner_name:
-                    co_owners_list.append(co_cand)
+                if len(co_cand) >= 3 and co_cand != owner_name and not re.search(r'(?i)\b(DETAILS|RECORD)\b', co_cand):
+                    if co_cand not in co_owners_list:
+                        co_owners_list.append(co_cand)
 
             primary_res = FieldExtractionResult(
                 value=owner_name,
@@ -319,7 +355,7 @@ class ExtractionService:
                 requiresVerification=bool(conf < 0.80),
                 bbox=bbox,
                 page=page,
-                evidence=owner_evidence,
+                evidence=owner_evidence[:80] if owner_evidence else None,
             )
             co_res = FieldExtractionResult(
                 value=co_owners_list,
@@ -425,10 +461,12 @@ class ExtractionService:
             ("ग्राम सभा", "Gram Sabha Land"),
             ("Agricultural", "Agricultural Land"),
             ("Commercial", "Commercial Land"),
+            ("Residential", "Residential Land"),
+            ("Cultivable", "Cultivable Agricultural Land"),
         ]
 
         for trigger, full_label in known_types:
-            if trigger in text:
+            if re.search(rf'\b{re.escape(trigger)}\b', text, re.IGNORECASE) or trigger in text:
                 bbox, page, ocr_conf = self._find_matching_token(all_tokens, trigger)
                 conf = float(round(min(0.95, max(0.70, ocr_conf)), 2))
                 return FieldExtractionResult(
@@ -440,48 +478,52 @@ class ExtractionService:
                     evidence=trigger,
                 )
 
-        return FieldExtractionResult(value="Agricultural Land", confidence=0.60, requiresVerification=True, evidence="Default standard classification")
+        # Zero-hallucination: Never invent classification if not in document
+        return FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
 
     def _extract_ownership_type(
         self, all_tokens: List[Tuple[int, OCRToken]], text: str
     ) -> FieldExtractionResult:
-        if re.search(r'संयुक्त|Joint|Co-operative|साझा', text, re.IGNORECASE):
-            return FieldExtractionResult(value="Joint Ownership", confidence=0.85, requiresVerification=False, evidence="Joint ownership marker found")
-        if re.search(r'एकल|Sole|Individual', text, re.IGNORECASE):
-            return FieldExtractionResult(value="Sole Ownership", confidence=0.85, requiresVerification=False, evidence="Sole ownership marker found")
+        if re.search(r'\b(?:Bhumidhar|भूमिधर)\b', text, re.IGNORECASE):
+            return FieldExtractionResult(value="Bhumidhar", confidence=0.92, requiresVerification=False, evidence="Bhumidhar tenure found")
+        if re.search(r'\b(?:संयुक्त|Joint|Co-operative|साझा)\b', text, re.IGNORECASE):
+            return FieldExtractionResult(value="Joint Ownership", confidence=0.88, requiresVerification=False, evidence="Joint ownership marker found")
+        if re.search(r'\b(?:एकल|Sole|Individual)\b', text, re.IGNORECASE):
+            return FieldExtractionResult(value="Sole Ownership", confidence=0.88, requiresVerification=False, evidence="Sole ownership marker found")
 
-        return FieldExtractionResult(value="Private Individual", confidence=0.70, requiresVerification=True, evidence="Standard individual tenure assumption")
+        # Zero-hallucination: Never invent ownership type if not in document
+        return FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
 
     def _extract_mutation(
         self, all_tokens: List[Tuple[int, OCRToken]], text: str
     ) -> Tuple[FieldExtractionResult, FieldExtractionResult]:
-        num_pat = r'(?:दाखिल[\s]*खारिज|नामांतरण|Mutation)[\s]*(?:संख्या|नं\.?|No\.?)?[:\s-]*([0-9/]+)'
-        m_num = re.search(num_pat, text, re.IGNORECASE)
+        num_pat = r'(?i)(?:दाखिल[\s]*खारिज|नामांतरण|Mutation)\s*(?:संख्या|नं\.?|No\.?|Number)?[ \t]*[:\-\n]+([0-9०-९/]+)'
+        m_num = re.search(num_pat, text)
         num_res = None
         if m_num:
             raw_val = normalize_numerals(m_num.group(1).strip())
             bbox, page, ocr_conf = self._find_matching_token(all_tokens, m_num.group(1))
             num_res = FieldExtractionResult(
                 value=raw_val,
-                confidence=float(round(min(0.95, ocr_conf), 2)),
+                confidence=float(round(min(0.95, max(0.70, ocr_conf)), 2)),
                 requiresVerification=False,
                 bbox=bbox,
                 page=page,
-                evidence=m_num.group(0),
+                evidence=m_num.group(0)[:80],
             )
         else:
             num_res = FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
 
-        date_pat = r'(?:आदेश[\s]*दिनांक|Order[\s]*Date|दिनांक)[:\s-]*\b(0[1-9]|[12][0-9]|3[01])[-/.](0[1-9]|1[012])[-/.](19\d\d|20\d\d)\b'
-        m_date = re.search(date_pat, text, re.IGNORECASE)
+        date_pat = r'(?i)(?:Mutation[\s]*Date|आदेश[\s]*दिनांक|Order[\s]*Date|दिनांक)[:\s\n-]*\b(0[1-9]|[12][0-9]|3[01])[-/.](0[1-9]|1[012])[-/.](19\d\d|20\d\d)\b'
+        m_date = re.search(date_pat, text)
         date_res = None
         if m_date:
             d_val = f"{m_date.group(1)}/{m_date.group(2)}/{m_date.group(3)}"
             date_res = FieldExtractionResult(
                 value=d_val,
-                confidence=0.88,
+                confidence=0.90,
                 requiresVerification=False,
-                evidence=m_date.group(0),
+                evidence=m_date.group(0)[:80],
             )
         else:
             date_res = FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
@@ -491,24 +533,42 @@ class ExtractionService:
     def _extract_registration(
         self, all_tokens: List[Tuple[int, OCRToken]], text: str
     ) -> Tuple[FieldExtractionResult, FieldExtractionResult]:
-        reg_pat = r'(?:पंजीकरण|Registration)[\s]*(?:संख्या|नं\.?|No\.?)?[:\s-]*([0-9/]+)'
-        m_reg = re.search(reg_pat, text, re.IGNORECASE)
+        reg_pat = r'(?i)(?:पंजीकरण|Registration)\s*(?:संख्या|नं\.?|No\.?|Number)?[ \t]*[:\-\n]+([A-Za-z0-9/-]+)'
+        m_reg = re.search(reg_pat, text)
         reg_res = None
         if m_reg:
             raw_val = normalize_numerals(m_reg.group(1).strip())
             bbox, page, ocr_conf = self._find_matching_token(all_tokens, m_reg.group(1))
-            reg_res = FieldExtractionResult(
-                value=raw_val,
-                confidence=float(round(min(0.95, ocr_conf), 2)),
-                requiresVerification=False,
-                bbox=bbox,
-                page=page,
-                evidence=m_reg.group(0),
-            )
+            num_val = raw_val if not re.search(r'(?i)\b(DETAILS|RECORD)\b', raw_val) else None
+            if num_val:
+                reg_res = FieldExtractionResult(
+                    value=num_val,
+                    confidence=float(round(min(0.95, max(0.70, ocr_conf)), 2)),
+                    requiresVerification=False,
+                    bbox=bbox,
+                    page=page,
+                    evidence=m_reg.group(0)[:80],
+                )
+            else:
+                reg_res = FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
         else:
             reg_res = FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
 
-        return reg_res, FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
+        reg_date_pat = r'(?i)(?:Registration[\s]*Date|पंजीकरण[\s]*दिनांक)[:\s\n-]*\b(0[1-9]|[12][0-9]|3[01])[-/.](0[1-9]|1[012])[-/.](19\d\d|20\d\d)\b'
+        m_reg_date = re.search(reg_date_pat, text)
+        reg_date_res = None
+        if m_reg_date:
+            d_val = f"{m_reg_date.group(1)}/{m_reg_date.group(2)}/{m_reg_date.group(3)}"
+            reg_date_res = FieldExtractionResult(
+                value=d_val,
+                confidence=0.90,
+                requiresVerification=False,
+                evidence=m_reg_date.group(0)[:80],
+            )
+        else:
+            reg_date_res = FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
+
+        return reg_res, reg_date_res
 
 
 extraction_service = ExtractionService()

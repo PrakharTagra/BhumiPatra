@@ -130,7 +130,7 @@ export const UploadDropzone = ({
           </p>
 
           <div className="mt-3 text-[11px] text-slate-400 bg-slate-100 px-2.5 py-1 rounded">
-            Recommended scan quality: 300+ DPI in greyscale or color for optimal OCR accuracy
+            Recommended scan quality: 300+ DPI in greyscale or color for optimal document processing accuracy
           </div>
         </div>
       ) : (

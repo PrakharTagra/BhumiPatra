@@ -114,7 +114,6 @@ export default function Dashboard() {
           <StatCard
             title="Total Documents"
             value={totalDocuments}
-            subtext="All ingested land records"
             icon={FileText}
             variant="primary"
             loading={loading}
@@ -122,7 +121,6 @@ export default function Dashboard() {
           <StatCard
             title="Processed Documents"
             value={processedDocuments}
-            subtext="Processing completed"
             icon={FileCheck2}
             variant="info"
             loading={loading}
@@ -130,7 +128,6 @@ export default function Dashboard() {
           <StatCard
             title="Pending Processing"
             value={pendingProcessing}
-            subtext="Awaiting execution"
             icon={Clock}
             variant="warning"
             loading={loading}
@@ -138,7 +135,6 @@ export default function Dashboard() {
           <StatCard
             title="Pending Verification"
             value={pendingVerification}
-            subtext="Awaiting officer sign-off"
             icon={AlertTriangle}
             variant="warning"
             loading={loading}
@@ -151,7 +147,6 @@ export default function Dashboard() {
         <StatCard
           title="Verified Records"
           value={verifiedRecords}
-          subtext="Approved by verification officers"
           icon={CheckCircle}
           variant="success"
           loading={loading}
@@ -159,7 +154,6 @@ export default function Dashboard() {
         <StatCard
           title="Rejected Records"
           value={rejectedRecords}
-          subtext="Flagged for discrepancies"
           icon={XCircle}
           variant="danger"
           loading={loading}
@@ -167,7 +161,6 @@ export default function Dashboard() {
         <StatCard
           title="Failed Documents"
           value={failedDocuments}
-          subtext="Processing errors"
           icon={AlertTriangle}
           variant="danger"
           loading={loading}
@@ -175,7 +168,6 @@ export default function Dashboard() {
         <StatCard
           title="Accuracy"
           value={accuracyRate}
-          subtext="System accuracy"
           icon={Target}
           variant="default"
           formatValue={false}

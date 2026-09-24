@@ -59,7 +59,7 @@ export const BhumiPatraLogo = ({
       <div className={`inline-flex flex-col items-center justify-center select-none ${className}`}>
         <img
           src={logoTransparent}
-          alt="BhumiPatra - AI-Powered Land Record Digitization & Validation System"
+          alt="BhumiPatra - Land Record Digitization & Verification System"
           className={`${fullLogoSizes[size] || fullLogoSizes.md} w-auto object-contain transition-all duration-200`}
         />
       </div>

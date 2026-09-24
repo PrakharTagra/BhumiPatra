@@ -1,7 +1,7 @@
 {
   "name": "bhumipatra-backend",
   "version": "1.0.0",
-  "description": "Production-ready backend API for BhumiPatra - AI-Powered Intelligent Land Record Digitization & Validation System",
+  "description": "Backend API for BhumiPatra - Land Record Digitization & Verification System",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

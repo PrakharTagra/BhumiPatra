@@ -123,7 +123,7 @@ export function ProcessingDetailsPage() {
     return (
       <div className="space-y-6">
         <Breadcrumbs items={[{ label: 'Documents', to: '/documents' }, { label: 'Processing Monitor' }]} />
-        <LoadingSpinner label="Fetching Live Pipeline Status..." size="lg" className="py-20" />
+        <LoadingSpinner label="Fetching Processing Status..." size="lg" className="py-20" />
       </div>
     );
   }
@@ -142,7 +142,7 @@ export function ProcessingDetailsPage() {
         items={[
           { label: 'Documents', to: '/documents' },
           { label: `Document #${id.substring(0, 8)}`, to: `/documents/${id}` },
-          { label: 'Processing Pipeline' },
+          { label: 'Processing Status' },
         ]}
       />
 

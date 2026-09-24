@@ -99,7 +99,7 @@ export const pipelineService = {
         const confidenceData = analysisResult.confidence || {};
         const validationData = analysisResult.validation || {};
 
-        const overallConf = confidenceData.overallConfidence ?? 85.0;
+        const overallConf = confidenceData.overallConfidence ?? 0.0;
         const requiresReview =
           confidenceData.requiresHumanVerification ||
           overallConf < 80.0 ||
@@ -126,6 +126,7 @@ export const pipelineService = {
           owners.push({
             name: String(extracted.owner_name.value).trim(),
             relation: 'Tenure Holder',
+            relativeName: extracted.father_guardian_name?.value ? String(extracted.father_guardian_name.value).trim() : '',
             shareRatio: '100%',
             confidence: Math.round(extracted.owner_name.confidence * 100),
           });
@@ -135,6 +136,7 @@ export const pipelineService = {
             owners.push({
               name: String(co).trim(),
               relation: 'Co-Sharer',
+              relativeName: '',
               shareRatio: 'Shareholder',
               confidence: Math.round((extracted.co_owners.confidence || 0.8) * 100),
             });
@@ -142,10 +144,11 @@ export const pipelineService = {
         }
         if (owners.length === 0) {
           owners.push({
-            name: 'Recorded Tenure Holder',
-            relation: 'Primary Owner',
-            shareRatio: '100%',
-            confidence: Math.round(overallConf),
+            name: 'Not detected',
+            relation: 'Requires verification',
+            relativeName: '',
+            shareRatio: '',
+            confidence: 0,
           });
         }
 
@@ -173,12 +176,12 @@ export const pipelineService = {
             documentId: document._id,
             owner: owners,
             landInformation: {
-              khasraNo: extracted.khasra_number?.value || '—',
-              khatauniNo: extracted.khata_number?.value || '—',
-              khewatNo: extracted.plot_number?.value || '—',
+              khasraNo: extracted.khasra_number?.value || 'Not detected',
+              khatauniNo: extracted.khata_number?.value || 'Not detected',
+              khewatNo: extracted.plot_number?.value || extracted.survey_number?.value || 'Not detected',
               area: parseFloat(extracted.area?.value) || 0,
-              areaUnit: extracted.area?.unit || extracted.area_unit?.value || 'Hectare',
-              landClassification: extracted.land_classification?.value || 'Agricultural Land',
+              areaUnit: extracted.area?.unit || extracted.area_unit?.value || (extracted.area?.value ? 'Hectare' : 'Not detected'),
+              landClassification: extracted.land_classification?.value || 'Not detected',
             },
             location: {
               state: extracted.state?.value || document.state,
@@ -187,7 +190,7 @@ export const pipelineService = {
               village: extracted.village?.value || document.village,
             },
             ownership: {
-              tenureType: extracted.ownership_type?.value || 'Private Individual',
+              tenureType: extracted.ownership_type?.value || 'Not detected',
               disputeStatus: 'Clear',
             },
             mutation: {
@@ -196,6 +199,7 @@ export const pipelineService = {
             },
             registration: {
               registrationNo: extracted.registration_number?.value || null,
+              remarks: extracted.registration_date?.value ? `Date: ${extracted.registration_date.value}` : null,
             },
             fieldLevelConfidence: confidenceData.fieldConfidences || {},
             validationResults: validationRules,

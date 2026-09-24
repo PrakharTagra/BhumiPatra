@@ -1,7 +1,7 @@
 # BhumiPatra (भूमिपत्र)
-### AI-Powered Intelligent Land Record Digitization & Validation System
+### Land Record Digitization & Verification System
 
-BhumiPatra is an enterprise-grade, end-to-end platform for digitizing, extracting, validating, and managing legacy Indian land records (Khatauni, Khasra, Jamabandi, Mutation registers, and Sale Deeds).
+BhumiPatra is an enterprise-grade platform for digitizing, extracting, validating, and managing legacy Indian land records (Khatauni, Khasra, Jamabandi, Mutation registers, and Sale Deeds).
 
 The system integrates five production components into a single, cohesive architecture:
 1. **Document Analysis Engine** (`/document-analysis-engine`) — Python 3.11+, FastAPI, OpenCV, PaddleOCR, PyMuPDF (Port 8000).
@@ -183,19 +183,19 @@ This automated test executes and validates the entire operational lifecycle:
 4. **User Creation**: Admin creates `DIGITIZATION_OPERATOR` and `VERIFICATION_OFFICER` accounts.
 5. **RBAC Verification**: Confirms Operator cannot access Admin dashboard (403) and Officer cannot create users (403).
 6. **Document Upload**: Operator uploads a scanned PDF/image via multipart form data (`POST /api/documents/upload`).
-7. **AI Pipeline Execution**: Autonomous 7-stage processing executes (`Upload → Preprocessing → OCR → Extraction → Validation → Scoring → Completed`).
+7. **Processing Pipeline Execution**: 7-stage processing executes (`Upload → Preprocessing → Ingestion → Extraction → Validation → Scoring → Completed`).
 8. **Officer Workstation**: Officer pulls pending queue (`GET /api/land-records/pending`), inspects the two-panel view, makes an in-line field correction with justification (`PUT /api/land-records/:id`), and approves the record (`POST /api/land-records/:id/approve`).
-9. **Tamper-Evident Audit Trail**: Verifies that user logins, document uploads, pipeline runs, corrections, and approvals are stored in `audit_logs` and `verification_logs`.
+9. **Audit Trail**: Verifies that user logins, document uploads, processing runs, corrections, and approvals are stored in `audit_logs` and `verification_logs`.
 
 ---
 
-## 📊 7-Stage Autonomous AI Pipeline
+## 📊 Document Processing Pipeline
 
-When an operator uploads a legacy land record, the document transitions through 7 distinct pipeline stages:
+When an operator uploads a legacy land record, the document transitions through distinct processing stages:
 
 1. **UPLOAD** — File validated, assigned unique ID (`DOC-YYYYMMDD-XXXXXXXX`), securely stored in `/uploads/documents`.
 2. **PREPROCESSING** — Image normalization, contrast enhancement, rotation correction.
-3. **OCR** — Optical Character Recognition extract textual content in Hindi/English.
+3. **TEXT INGESTION** — Text recognition extracts textual content in Hindi/English.
 4. **EXTRACTION** — Structured entity extraction (Khasra No, Khatauni No, Khewat No, Area, Land Classification, Tenure Holders/Owners, Share Ratios).
 5. **VALIDATION** — Rule-based checks (required fields, format standards, mathematical consistency of area and shares).
 6. **CONFIDENCE ANALYSIS** — Field-level and composite confidence scoring (0-100%). High confidence (≥80%) and Low confidence (<80%) classification.
@@ -206,10 +206,10 @@ When an operator uploads a legacy land record, the document transitions through 
 ## 📑 Verification Workstation (Port 3001)
 
 Designed specifically for **Tehsildars** and **Revenue Officers**:
-- **Split-Screen Interface**: Left panel displays original scanned document (zoom, pan, rotate); Right panel displays AI-extracted fields with confidence scores.
+- **Split-Screen Interface**: Left panel displays original scanned document (zoom, pan, rotate); Right panel displays extracted fields with confidence scores.
 - **In-Line Field Correction**: Officer can edit any extracted value. Every modification requires a stated reason and is recorded in `verification_logs`.
 - **Three Core Decisions**:
-  - **Approve**: Marks record as `VERIFIED` with official seal and remarks.
+  - **Approve**: Marks record as `VERIFIED` with official remarks.
   - **Reject**: Marks record as `REJECTED` with specific rejection reason.
   - **Send Back**: Returns document to `DIGITIZATION_OPERATOR` for rescanning or correction.
 

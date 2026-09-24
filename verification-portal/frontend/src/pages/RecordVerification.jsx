@@ -25,23 +25,25 @@ import {
   FileText,
   AlertTriangle,
   RefreshCw,
-  Sparkles,
 } from 'lucide-react';
 
 const REQUIRED_FIELDS = [
   { key: 'ownerName', label: 'Owner Name' },
+  { key: 'relativeName', label: "Father's / Guardian Name" },
   { key: 'khasraNumber', label: 'Khasra Number' },
   { key: 'khataNumber', label: 'Khata Number' },
   { key: 'surveyNumber', label: 'Survey Number' },
+  { key: 'plotNumber', label: 'Plot Number' },
   { key: 'area', label: 'Area' },
-  { key: 'areaUnit', label: 'Area Unit' },
+  { key: 'areaUnit', label: 'Unit' },
   { key: 'village', label: 'Village' },
   { key: 'tehsil', label: 'Tehsil' },
   { key: 'district', label: 'District' },
+  { key: 'state', label: 'State' },
   { key: 'landClassification', label: 'Land Classification' },
-  { key: 'ownershipDetails', label: 'Ownership Details' },
-  { key: 'mutationDetails', label: 'Mutation Details' },
-  { key: 'registrationDetails', label: 'Registration Details' },
+  { key: 'ownershipDetails', label: 'Ownership' },
+  { key: 'mutationDetails', label: 'Mutation' },
+  { key: 'registrationDetails', label: 'Registration' },
 ];
 
 export default function RecordVerification() {
@@ -297,13 +299,13 @@ export default function RecordVerification() {
           />
         </div>
 
-        {/* RIGHT PANEL: AI-Extracted Information & Corrections */}
+        {/* RIGHT PANEL: Extracted Information & Verification */}
         <div className="lg:col-span-6 xl:col-span-5 h-[780px] flex flex-col bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-600" />
+              <FileText className="w-4 h-4 text-slate-700" />
               <h2 className="text-sm font-bold text-navy-950 uppercase tracking-wider">
-                Record Details
+                Extracted Record
               </h2>
             </div>
             <span className="text-[11px] text-slate-500 font-medium">
@@ -340,7 +342,7 @@ export default function RecordVerification() {
             <span>
               Modified fields: <strong className="text-slate-800">{Object.keys(record.modifiedFields || {}).length}</strong>
             </span>
-            <span>All modifications are sealed in audit log</span>
+            <span>All modifications are recorded in the audit log</span>
           </div>
         </div>
       </div>

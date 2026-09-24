@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 
 app = FastAPI(
     title="BhumiPatra Document Analysis Engine",
-    description="Intelligent AI-Powered Document Preprocessing, PaddleOCR & Land Record Field Extraction",
+    description="Document Preprocessing, Text Extraction & Cadastral Field Analysis Engine",
     version="1.0.0",
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,

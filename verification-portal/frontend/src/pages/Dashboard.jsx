@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  Sparkles,
+  FileCheck,
   RefreshCw,
   ArrowRight,
   Eye,
@@ -99,7 +99,6 @@ export default function Dashboard() {
           <StatCard
             title="Pending Verification"
             value={pendingCount}
-            subtext="Awaiting officer decision"
             icon={Inbox}
             variant="navy"
             loading={loading}
@@ -107,15 +106,13 @@ export default function Dashboard() {
           <StatCard
             title="High-Confidence"
             value={highConfidenceCount}
-            subtext="Confidence ≥ 80%"
-            icon={Sparkles}
+            icon={FileCheck}
             variant="success"
             loading={loading}
           />
           <StatCard
             title="Low-Confidence"
             value={lowConfidenceCount}
-            subtext="Confidence < 80%"
             icon={AlertTriangle}
             variant="warning"
             loading={loading}
@@ -123,7 +120,6 @@ export default function Dashboard() {
           <StatCard
             title="Approved Records"
             value={approvedCount}
-            subtext="Validated & signed off"
             icon={CheckCircle2}
             variant="success"
             loading={loading}
@@ -131,7 +127,6 @@ export default function Dashboard() {
           <StatCard
             title="Rejected Records"
             value={rejectedCount}
-            subtext="Flagged for discrepancy"
             icon={XCircle}
             variant="danger"
             loading={loading}

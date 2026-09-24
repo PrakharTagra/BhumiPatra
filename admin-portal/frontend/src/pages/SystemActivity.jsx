@@ -88,7 +88,6 @@ export default function SystemActivity() {
         <StatCard
           title="Database Connection"
           value={dbStatus || (loading ? '—' : 'CONNECTED')}
-          subtext="Database status"
           icon={Database}
           variant="success"
           loading={loading}
@@ -96,7 +95,6 @@ export default function SystemActivity() {
         <StatCard
           title="Active Processing Workers"
           value={data?.activeWorkers ?? (queueMetrics?.workers !== undefined ? queueMetrics.workers : '—')}
-          subtext="Worker nodes"
           icon={Cpu}
           variant="primary"
           loading={loading}
@@ -104,7 +102,6 @@ export default function SystemActivity() {
         <StatCard
           title="Queue Backlog"
           value={queueMetrics?.pending ?? data?.queueBacklog ?? '—'}
-          subtext="Awaiting execution"
           icon={Layers}
           variant="warning"
           loading={loading}
@@ -112,7 +109,6 @@ export default function SystemActivity() {
         <StatCard
           title="System Uptime"
           value={uptime || '—'}
-          subtext="Uptime"
           icon={Clock}
           variant="default"
           formatValue={false}
@@ -162,7 +158,7 @@ export default function SystemActivity() {
             <EmptyState
               type="system"
               title="No system activity events recorded"
-              message="The backend has not registered any recent automated pipeline alerts or background task events."
+              message="No processing alerts or background task events have been recorded."
             />
           </div>
         ) : (

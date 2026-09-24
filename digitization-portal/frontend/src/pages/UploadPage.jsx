@@ -127,6 +127,11 @@ export function UploadPage() {
       success('Document uploaded successfully. Processing started.', 'Upload Complete');
 
       if (documentId) {
+        try {
+          await documentsApi.triggerProcess(documentId);
+        } catch (procErr) {
+          console.warn('Document processing trigger notice:', procErr);
+        }
         // Redirect directly to real-time Processing Details page for this document
         navigate(`/documents/${documentId}/processing`);
       } else {

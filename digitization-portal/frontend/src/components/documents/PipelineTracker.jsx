@@ -62,26 +62,23 @@ export const PipelineTracker = ({
       <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-200">
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-800">
-            AI Processing Pipeline
+            Processing Status
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Real-time status reported by BhumiPatra Autonomous Extraction Engine
-          </p>
         </div>
         <div className="flex items-center gap-2">
           {isCompleted && (
             <span className="px-2.5 py-1 text-xs font-semibold rounded bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5" /> Pipeline Completed
+              <Check className="w-3.5 h-3.5" /> Processing Completed
             </span>
           )}
           {isFailed && (
             <span className="px-2.5 py-1 text-xs font-semibold rounded bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5" /> Pipeline Failed
+              <AlertCircle className="w-3.5 h-3.5" /> Processing Failed
             </span>
           )}
           {!isCompleted && !isFailed && (
             <span className="px-2.5 py-1 text-xs font-semibold rounded bg-sky-50 text-sky-700 border border-sky-200 flex items-center gap-1.5">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Live Processing
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing
             </span>
           )}
         </div>
@@ -165,12 +162,12 @@ export const PipelineTracker = ({
         })}
       </div>
 
-      {/* Error Banner if Pipeline Failed */}
+      {/* Error Banner if Processing Failed */}
       {isFailed && error && (
         <div className="mt-4 p-3 rounded-md bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
           <div>
-            <span className="font-semibold">Pipeline Failure Diagnostic:</span> {error}
+            <span className="font-semibold">Processing Failed:</span> {error}
           </div>
         </div>
       )}

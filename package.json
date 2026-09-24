@@ -1,7 +1,7 @@
 {
   "name": "bhumipatra-monorepo",
   "version": "1.0.0",
-  "description": "BhumiPatra - AI-Powered Intelligent Land Record Digitization & Validation System",
+  "description": "BhumiPatra - Land Record Digitization & Verification System",
   "private": true,
   "scripts": {
     "setup-admin": "npm --prefix backend run setup-admin",
@@ -22,7 +22,7 @@
     "bhumipatra",
     "land-records",
     "digitization",
-    "ai-ocr",
+    "document-processing",
     "verification-workstation",
     "governance"
   ],

@@ -50,9 +50,11 @@ function normalizeLandRecord(record, req) {
     fileUrl: fullFileUrl,
     documentType: doc.documentType || 'Scanned Land Record',
     ownerName: ownerFirst?.name || '',
+    relativeName: ownerFirst?.relativeName || '',
     khasraNumber: landInfo.khasraNo || '',
     khataNumber: landInfo.khatauniNo || '',
     surveyNumber: landInfo.khewatNo || '',
+    plotNumber: landInfo.khewatNo || '',
     area: landInfo.area !== undefined ? landInfo.area : 0,
     areaUnit: landInfo.areaUnit || 'Acre',
     landClassification: landInfo.landClassification || '',
@@ -61,8 +63,8 @@ function normalizeLandRecord(record, req) {
     tehsil: loc.tehsil || doc.tehsil || '',
     village: loc.village || doc.village || '',
     ownershipDetails: plain.ownership?.tenureType || '',
-    mutationDetails: plain.mutation?.mutationNo ? `Mutation No: ${plain.mutation.mutationNo}` : '',
-    registrationDetails: plain.registration?.registrationNo ? `Reg No: ${plain.registration.registrationNo}` : '',
+    mutationDetails: plain.mutation?.mutationNo ? (plain.mutation.remarks ? `Mutation No: ${plain.mutation.mutationNo} (${plain.mutation.remarks})` : `Mutation No: ${plain.mutation.mutationNo}`) : '',
+    registrationDetails: plain.registration?.registrationNo ? (plain.registration.remarks ? `Reg No: ${plain.registration.registrationNo} (${plain.registration.remarks})` : `Reg No: ${plain.registration.registrationNo}`) : '',
     confidence: plain.overallConfidence,
     confidenceScore: plain.overallConfidence,
     reviewStatus: plain.verificationStatus,
@@ -344,6 +346,15 @@ export const landRecordController = {
             }
             break;
 
+          case 'relativeName':
+            if (!record.owner || record.owner.length === 0) {
+              record.owner = [{ relativeName: value }];
+            } else {
+              oldValue = oldValue ?? record.owner[0].relativeName;
+              record.owner[0].relativeName = value;
+            }
+            break;
+
           case 'khasraNumber':
             record.landInformation = record.landInformation || {};
             oldValue = oldValue ?? record.landInformation.khasraNo;
@@ -357,6 +368,12 @@ export const landRecordController = {
             break;
 
           case 'surveyNumber':
+            record.landInformation = record.landInformation || {};
+            oldValue = oldValue ?? record.landInformation.khewatNo;
+            record.landInformation.khewatNo = value;
+            break;
+
+          case 'plotNumber':
             record.landInformation = record.landInformation || {};
             oldValue = oldValue ?? record.landInformation.khewatNo;
             record.landInformation.khewatNo = value;
@@ -396,6 +413,12 @@ export const landRecordController = {
             record.location = record.location || {};
             oldValue = oldValue ?? record.location.district;
             record.location.district = value;
+            break;
+
+          case 'state':
+            record.location = record.location || {};
+            oldValue = oldValue ?? record.location.state;
+            record.location.state = value;
             break;
 
           case 'ownershipDetails':
