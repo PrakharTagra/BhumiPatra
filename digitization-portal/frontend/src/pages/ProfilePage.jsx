@@ -21,7 +21,7 @@ import {
   FileCheck
 } from 'lucide-react';
 
-export const ProfilePage = () => {
+export function ProfilePage() {
   const { user, logout, token } = useAuth();
   const { info, error: toastError } = useToast();
 
@@ -55,9 +55,9 @@ export const ProfilePage = () => {
   };
 
   const displayName = profile?.name || profile?.username || profile?.email?.split('@')[0] || 'Digitization Operator';
-  const email = profile?.email || 'operator@bhumipatra.gov';
+  const email = profile?.email || 'operator@bhumipatra.in';
   const role = profile?.role || 'DIGITIZATION_OPERATOR';
-  const department = profile?.department || 'Land Records & Revenue Digitization Cell';
+  const department = profile?.department || 'Land Records Department';
   const assignedDistrict = profile?.assignedDistrict || profile?.district || 'State Central Repository';
   const lastLogin = profile?.lastLogin || profile?.updatedAt || new Date().toISOString();
 
@@ -69,11 +69,8 @@ export const ProfilePage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-            Digitization Operator Profile
+            Profile
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Operational credentials, assigned revenue jurisdiction, and compliance status
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -149,74 +146,17 @@ export const ProfilePage = () => {
 
           <div>
             <span className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Authentication Method</span>
-            <p className="font-semibold text-slate-800 text-sm mt-1">JWT Bearer Authentication</p>
-          </div>
-
-          <div>
-            <span className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Active Token Status</span>
-            <p className="font-mono text-emerald-600 font-semibold text-sm mt-1">
-              {token ? 'Valid (Stored Securely)' : 'Unset'}
-            </p>
+            <p className="font-semibold text-slate-800 text-sm mt-1">Secure Authentication</p>
           </div>
 
           <div>
             <span className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Access Level</span>
-            <p className="font-semibold text-slate-800 text-sm mt-1">Upload &amp; Pipeline Monitoring Only</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Operator Responsibilities & SOP Card */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-          <FileCheck className="w-4 h-4 text-navy-700" />
-          <span>Digitization Operator Operating Procedures (SOP)</span>
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600">
-          <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 space-y-1.5">
-            <div className="flex items-center gap-2 font-semibold text-slate-800">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>1. Scan Quality Standard</span>
-            </div>
-            <p className="text-[11px] leading-relaxed text-slate-500 pl-6">
-              Only upload legacy records (Jamabandi, Khasra, Naksha) scanned at minimum 300 DPI. Verify pages are right-side-up and legible.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 space-y-1.5">
-            <div className="flex items-center gap-2 font-semibold text-slate-800">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>2. No Manual Data Entry of Land Records</span>
-            </div>
-            <p className="text-[11px] leading-relaxed text-slate-500 pl-6">
-              Operators are restricted to tagging only the 6 administrative indices (Document Type, State, District, Tehsil, Village, Record Year). Do not type owners or areas manually.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 space-y-1.5">
-            <div className="flex items-center gap-2 font-semibold text-slate-800">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>3. AI Pipeline Monitoring</span>
-            </div>
-            <p className="text-[11px] leading-relaxed text-slate-500 pl-6">
-              Monitor documents as they progress through Preprocessing, OCR, Extraction, Validation, and Confidence Analysis. Re-trigger in case of transient pipeline exceptions.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 space-y-1.5">
-            <div className="flex items-center gap-2 font-semibold text-slate-800">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>4. Confidentiality &amp; Audit Trail</span>
-            </div>
-            <p className="text-[11px] leading-relaxed text-slate-500 pl-6">
-              All document uploads are permanently cryptographically bound to your operator badge ID in the audit ledger.
-            </p>
+            <p className="font-semibold text-slate-800 text-sm mt-1">Upload &amp; View Records</p>
           </div>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default ProfilePage;

@@ -71,7 +71,7 @@ export default function Sidebar({ isOpen, onClose, isCollapsed = false, onToggle
             {isCollapsed ? (
               <Logo collapsed={true} size="md" />
             ) : (
-              <Logo variant="horizontal" size="sm" portalSubtitle="Admin Portal" theme="dark" />
+              <Logo variant="horizontal" size="sm" portalSubtitle="Administration Portal" theme="dark" />
             )}
           </div>
           <div className="flex items-center">
@@ -144,7 +144,7 @@ export default function Sidebar({ isOpen, onClose, isCollapsed = false, onToggle
               </span>
             </div>
             <div className="text-[10px] text-slate-400 mt-1">
-              Build v1.0.0 &bull; Node/Express
+              Build v1.0.0
             </div>
           </div>
         )}

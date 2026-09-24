@@ -120,7 +120,7 @@ export default function FieldItem({
             {/* Before vs After correction display */}
             {isModified && originalValue !== undefined && originalValue !== value && (
               <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-500 bg-slate-100/80 px-2 py-1 rounded border border-slate-200">
-                <span className="font-medium text-slate-600">Original AI Value:</span>
+                <span className="font-medium text-slate-600">Original Value:</span>
                 <span className="line-through text-slate-500">{originalValue || '—'}</span>
                 <ArrowRight className="w-3 h-3 text-slate-400" />
                 <span className="font-semibold text-blue-700">{value}</span>

@@ -72,9 +72,6 @@ export default function DigitizationAnalytics() {
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
             Digitization Analytics
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Pipeline throughput, processing distributions, and operational error categories.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -110,7 +107,6 @@ export default function DigitizationAnalytics() {
       {/* Chart 1: Documents Processed Over Time */}
       <Card
         title="Documents Processed Over Time"
-        subtitle="Daily/weekly digitization volume recorded by the backend"
       >
         {loading ? (
           <div className="h-64 flex items-center justify-center">
@@ -155,7 +151,6 @@ export default function DigitizationAnalytics() {
         {/* Chart 2: Processing Status */}
         <Card
           title="Processing Status Distribution"
-          subtitle="Pipeline breakdown of ingested records"
         >
           {loading ? (
             <div className="h-64 flex items-center justify-center">
@@ -200,7 +195,6 @@ export default function DigitizationAnalytics() {
         {/* Chart 3: Document Type Distribution */}
         <Card
           title="Document Type Distribution"
-          subtitle="Classification of digitized land instruments"
         >
           {loading ? (
             <div className="h-64 flex items-center justify-center">
@@ -237,7 +231,6 @@ export default function DigitizationAnalytics() {
         {/* Chart 4: District-wise Progress */}
         <Card
           title="District-wise Progress"
-          subtitle="Digitization volume achieved across jurisdictions"
         >
           {loading ? (
             <div className="h-64 flex items-center justify-center">
@@ -277,7 +270,6 @@ export default function DigitizationAnalytics() {
         {/* Chart 5: Error Categories */}
         <Card
           title="Error Categories"
-          subtitle="Pipeline processing failure and OCR discrepancy classification"
         >
           {loading ? (
             <div className="h-64 flex items-center justify-center">

@@ -52,11 +52,8 @@ export default function Profile() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Administrator Profile & Security
+            Profile
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Active session governance, administrative credentials, and role assignments.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -100,7 +97,7 @@ export default function Profile() {
             </div>
             <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-slate-400" />
-              <span>{profileData?.email || 'admin@bhumipatra.gov'}</span>
+              <span>{profileData?.email || 'admin@bhumipatra.in'}</span>
             </p>
           </div>
         </div>
@@ -140,41 +137,17 @@ export default function Profile() {
         </div>
       </Card>
 
-      {/* Security & Access Rights Matrix */}
+      {/* Security Info */}
       <Card
-        title="Administrative Security & RBAC Privileges"
-        subtitle="Role-based permissions granted to this authenticated session"
+        title="Security Details"
       >
         <div className="space-y-3 text-xs">
-          <div className="p-3.5 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-3">
-            <Shield className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-emerald-950">Full Portal Governance Privilege</h4>
-              <p className="text-emerald-800 text-[11px] mt-0.5 leading-relaxed">
-                Your account is assigned the primary <code>ADMIN</code> role, authorizing you to inspect all document queues, manage operator and verification officer accounts, and audit all system logs.
-              </p>
-            </div>
-          </div>
-
-          <div className="p-3.5 rounded-lg bg-blue-50/70 border border-blue-200 flex items-start gap-3">
-            <Lock className="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-blue-950">Land Title Immutability Safeguard</h4>
-              <p className="text-blue-800 text-[11px] mt-0.5 leading-relaxed">
-                By architectural policy, administrators monitor ingestion integrity and system activity but cannot directly modify verified land ownership attributes without officer workflow endorsement.
-              </p>
-            </div>
-          </div>
-
           <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex items-start gap-3">
-            <KeyRound className="w-5 h-5 text-slate-700 flex-shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-slate-900">Active Bearer Token Session</h4>
-              <p className="text-slate-500 text-[11px] mt-0.5 font-mono truncate">
-                Token Header: Bearer {token ? `${token.substring(0, 24)}...` : 'Not Available'}
-              </p>
-              <p className="text-[10px] text-slate-400 mt-1">
-                Token is stored in secure local storage and automatically attached to all outgoing API requests.
+            <Shield className="w-5 h-5 text-slate-700 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-slate-900">Administrator Access</h4>
+              <p className="text-slate-500 text-[11px] mt-0.5 leading-relaxed">
+                Your account is authorized to view all document queues, manage user accounts, and review audit logs.
               </p>
             </div>
           </div>

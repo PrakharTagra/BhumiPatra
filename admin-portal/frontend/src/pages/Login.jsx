@@ -90,14 +90,8 @@ export default function Login() {
         <h1 className="text-2xl font-bold tracking-tight text-navy-950">
           BhumiPatra
         </h1>
-        <p className="text-sm font-medium text-slate-700 mt-1">
-          AI-Powered Intelligent Land Record
-        </p>
-        <p className="text-xs text-slate-500 font-medium">
-          Digitization &amp; Validation System
-        </p>
         <div className="mt-2.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-navy-100 text-navy-900 border border-navy-200">
-          Administrator Governance Portal
+          Administration Portal
         </div>
       </div>
 
@@ -173,11 +167,8 @@ export default function Login() {
           <div className="mt-6 pt-5 border-t border-slate-100 text-center">
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-medium">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Encrypted JWT Authentication & RBAC Enforced</span>
+              <span>Secure Authentication</span>
             </div>
-            <p className="mt-2 text-[10px] text-slate-400 leading-normal">
-              Unauthorized access to BhumiPatra systems is strictly prohibited and audited.
-            </p>
           </div>
         </div>
       </div>

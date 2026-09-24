@@ -187,7 +187,7 @@ export default function RecordVerification() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <LoadingSpinner size="lg" message="Loading scanned instrument & AI extracted fields..." />
+        <LoadingSpinner size="lg" message="Loading scanned instrument & extracted fields..." />
       </div>
     );
   }
@@ -303,7 +303,7 @@ export default function RecordVerification() {
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-blue-600" />
               <h2 className="text-sm font-bold text-navy-950 uppercase tracking-wider">
-                AI-Extracted Land Attributes
+                Record Details
               </h2>
             </div>
             <span className="text-[11px] text-slate-500 font-medium">

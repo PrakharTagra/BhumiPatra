@@ -281,9 +281,6 @@ export default function Users() {
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
             User Management
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Governance of Digitization Operators, Verification Officers, and Portal Admins.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button

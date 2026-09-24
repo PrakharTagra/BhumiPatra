@@ -129,11 +129,8 @@ export default function VerificationHistory() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Verification History & Audit Trail
+            Verification History
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Tamper-evident chronological audit of land record corrections and officer justifications.
-          </p>
         </div>
         <Button variant="secondary" size="sm" icon={RefreshCw} loading={loading} onClick={fetchGlobalHistory}>
           Refresh History

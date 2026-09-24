@@ -52,11 +52,6 @@ export default function Navbar({ onMenuToggle }) {
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Portal status indicator */}
-        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-medium">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Server Connected</span>
-        </div>
 
         {/* User dropdown */}
         <div className="relative" ref={dropdownRef}>

@@ -72,11 +72,8 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Administrative Overview
+            Dashboard
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Real-time digitization tracking, verification workflows, and operational metrics.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -109,9 +106,8 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Document Pipeline Metrics
+            Processing Metrics
           </h2>
-          <span className="text-[11px] text-slate-400 font-mono">Real API telemetry</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -126,7 +122,7 @@ export default function Dashboard() {
           <StatCard
             title="Processed Documents"
             value={processedDocuments}
-            subtext="OCR & indexing completed"
+            subtext="Processing completed"
             icon={FileCheck2}
             variant="info"
             loading={loading}
@@ -134,7 +130,7 @@ export default function Dashboard() {
           <StatCard
             title="Pending Processing"
             value={pendingProcessing}
-            subtext="Awaiting pipeline execution"
+            subtext="Awaiting execution"
             icon={Clock}
             variant="warning"
             loading={loading}
@@ -171,15 +167,15 @@ export default function Dashboard() {
         <StatCard
           title="Failed Documents"
           value={failedDocuments}
-          subtext="Extraction or OCR errors"
+          subtext="Processing errors"
           icon={AlertTriangle}
           variant="danger"
           loading={loading}
         />
         <StatCard
-          title="System Accuracy / Confidence"
+          title="Accuracy"
           value={accuracyRate}
-          subtext="Available model confidence metric"
+          subtext="System accuracy"
           icon={Target}
           variant="default"
           formatValue={false}
@@ -207,10 +203,9 @@ export default function Dashboard() {
 
       {/* Recent Tables & Status breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Ingested Documents */}
+        {/* Recent Documents */}
         <Card
           title="Recent Documents"
-          subtitle="Latest records fed into the pipeline"
           actions={
             <Link to="/documents" className="text-xs text-blue-700 hover:text-blue-900 font-semibold flex items-center gap-1">
               View all <ArrowRight className="w-3.5 h-3.5" />
@@ -260,10 +255,9 @@ export default function Dashboard() {
           )}
         </Card>
 
-        {/* Recent Audit / Operational Activity */}
+        {/* Recent Activity */}
         <Card
-          title="Recent System Audit Events"
-          subtitle="Operational actions logged across the portal"
+          title="Recent Activity"
           actions={
             <Link to="/audit-logs" className="text-xs text-blue-700 hover:text-blue-900 font-semibold flex items-center gap-1">
               View all <ArrowRight className="w-3.5 h-3.5" />
@@ -319,7 +313,6 @@ export default function Dashboard() {
             </div>
             <div>
               <h4 className="text-sm font-semibold text-navy-950">Digitization Analytics</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Examine throughput & pipeline rates</p>
             </div>
           </div>
         </Link>
@@ -334,7 +327,6 @@ export default function Dashboard() {
             </div>
             <div>
               <h4 className="text-sm font-semibold text-navy-950">Verification Analytics</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Review officer approval statistics</p>
             </div>
           </div>
         </Link>
@@ -348,8 +340,7 @@ export default function Dashboard() {
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-navy-950">User Governance</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Manage operator & officer roles</p>
+              <h4 className="text-sm font-semibold text-navy-950">User Management</h4>
             </div>
           </div>
         </Link>

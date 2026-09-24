@@ -27,7 +27,7 @@ import {
   Terminal
 } from 'lucide-react';
 
-export const ProcessingDetailsPage = () => {
+export function ProcessingDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { success, error: toastError, info } = useToast();
@@ -109,7 +109,7 @@ export const ProcessingDetailsPage = () => {
     try {
       setIsRetrying(true);
       await documentsApi.triggerProcess(id);
-      success('AI Processing job initiated for document.', 'Processing Triggered');
+      success('Processing started.', 'Processing Triggered');
       setIsPolling(true);
       await fetchStatus(false);
     } catch (err) {
@@ -151,12 +151,12 @@ export const ProcessingDetailsPage = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-              Live AI Processing Monitor
+              Processing Status
             </h1>
             <StatusBadge status={currentStatus} />
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Tracking execution across the 7 autonomous AI stages for document ID: <span className="font-mono font-semibold text-slate-700">{id}</span>
+            Tracking execution stages for document ID: <span className="font-mono font-semibold text-slate-700">{id}</span>
           </p>
         </div>
 
@@ -197,7 +197,7 @@ export const ProcessingDetailsPage = () => {
               isLoading={isRetrying}
               onClick={handleTriggerProcess}
             >
-              Restart AI Pipeline
+              Restart Processing
             </Button>
           )}
 
@@ -289,12 +289,9 @@ export const ProcessingDetailsPage = () => {
           <div className="flex items-center gap-2">
             <Terminal className="w-4 h-4 text-slate-700" />
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
-              Autonomous Pipeline Event Log
+              Processing Log
             </h3>
           </div>
-          <span className="text-[11px] font-mono text-slate-500">
-            Source: BhumiPatra Pipeline Worker
-          </span>
         </div>
 
         {/* Display real logs/steps returned by the API */}
@@ -313,7 +310,7 @@ export const ProcessingDetailsPage = () => {
           <div className="p-4 rounded-md bg-slate-50 border border-slate-200 text-xs text-slate-600">
             <p className="font-medium text-slate-700">No additional diagnostic logs returned by the API worker for this document.</p>
             <p className="text-[11px] text-slate-500 mt-1">
-              Current stage: <strong className="font-mono text-navy-800">{currentStep || currentStatus}</strong>. All transitions are autonomously synchronized.
+              Current stage: <strong className="font-mono text-navy-800">{currentStep || currentStatus}</strong>.
             </p>
           </div>
         )}
@@ -331,7 +328,7 @@ export const ProcessingDetailsPage = () => {
                 Land Record Digitization Completed Successfully
               </h4>
               <p className="text-xs text-emerald-800 mt-0.5">
-                OCR and tabular extraction finished with overall confidence of <strong className="font-mono">{confidence !== undefined ? `${confidence}%` : 'N/A'}</strong>.
+                Processing completed with overall confidence of <strong className="font-mono">{confidence !== undefined ? `${confidence}%` : 'N/A'}</strong>.
               </p>
             </div>
           </div>
@@ -344,6 +341,6 @@ export const ProcessingDetailsPage = () => {
       )}
     </div>
   );
-};
+}
 
 export default ProcessingDetailsPage;

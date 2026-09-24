@@ -61,11 +61,8 @@ export default function SystemActivity() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            System Activity & Health
+            System Activity
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Real-time pipeline infrastructure telemetry, worker queues, and automated daemon health.
-          </p>
         </div>
         <Button
           variant="secondary"
@@ -91,7 +88,7 @@ export default function SystemActivity() {
         <StatCard
           title="Database Connection"
           value={dbStatus || (loading ? '—' : 'CONNECTED')}
-          subtext="MongoDB Replica Cluster"
+          subtext="Database status"
           icon={Database}
           variant="success"
           loading={loading}
@@ -99,15 +96,15 @@ export default function SystemActivity() {
         <StatCard
           title="Active Processing Workers"
           value={data?.activeWorkers ?? (queueMetrics?.workers !== undefined ? queueMetrics.workers : '—')}
-          subtext="OCR & indexing daemon nodes"
+          subtext="Worker nodes"
           icon={Cpu}
           variant="primary"
           loading={loading}
         />
         <StatCard
-          title="Ingestion Queue Backlog"
+          title="Queue Backlog"
           value={queueMetrics?.pending ?? data?.queueBacklog ?? '—'}
-          subtext="Awaiting pipeline execution"
+          subtext="Awaiting execution"
           icon={Layers}
           variant="warning"
           loading={loading}
@@ -115,7 +112,7 @@ export default function SystemActivity() {
         <StatCard
           title="System Uptime"
           value={uptime || '—'}
-          subtext="Continuously operational"
+          subtext="Uptime"
           icon={Clock}
           variant="default"
           formatValue={false}
@@ -149,12 +146,11 @@ export default function SystemActivity() {
 
       {/* Real-time System Event Log Stream */}
       <Card
-        title="Automated Daemon & Pipeline Events"
-        subtitle="Chronological stream of system executions"
+        title="System Events"
         actions={
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Radio className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
-            <span>Telemetry Receiver Active</span>
+            <Radio className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Live</span>
           </div>
         }
         bodyClassName="p-0"
@@ -188,7 +184,7 @@ export default function SystemActivity() {
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-xs text-slate-900">
-                          {item.service || item.module || 'System Pipeline'}
+                          {item.service || item.module || 'System'}
                         </span>
                         <Badge variant={badgeVariant} size="sm">
                           {level}

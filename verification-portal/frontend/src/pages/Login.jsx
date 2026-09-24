@@ -89,14 +89,8 @@ export default function Login() {
         <h1 className="text-2xl font-bold tracking-tight text-navy-950">
           BhumiPatra
         </h1>
-        <p className="text-sm font-medium text-slate-700 mt-1">
-          AI-Powered Intelligent Land Record
-        </p>
-        <p className="text-xs text-slate-500 font-medium">
-          Digitization &amp; Validation System
-        </p>
         <div className="mt-2.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-900 border border-blue-200">
-          Officer Verification Desk
+          Verification Officer Portal
         </div>
       </div>
 
@@ -163,20 +157,10 @@ export default function Login() {
                 className="w-full justify-center bg-navy-950 hover:bg-navy-900 text-white shadow-md font-semibold text-sm py-2.5"
                 icon={ArrowRight}
               >
-                Sign In to Verification Desk
+                Sign In
               </Button>
             </div>
           </form>
-
-          <div className="mt-6 pt-5 border-t border-slate-100 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Restricted to Authorized Verification Officers</span>
-            </div>
-            <p className="mt-2 text-[10px] text-slate-400 leading-normal">
-              Official decisions on land titles are cryptographically signed and logged for audit.
-            </p>
-          </div>
         </div>
       </div>
     </div>

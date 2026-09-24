@@ -64,11 +64,8 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Verification Desk Overview
+            Dashboard
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Real-time backlog of AI-extracted land titles awaiting statutory officer validation.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -98,13 +95,6 @@ export default function Dashboard() {
 
       {/* Main Metric Cards Grid */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Workstation Verification Telemetry
-          </h2>
-          <span className="text-[11px] text-slate-400 font-mono">Live API records</span>
-        </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatCard
             title="Pending Verification"
@@ -117,7 +107,7 @@ export default function Dashboard() {
           <StatCard
             title="High-Confidence"
             value={highConfidenceCount}
-            subtext="AI confidence ≥ 80%"
+            subtext="Confidence ≥ 80%"
             icon={Sparkles}
             variant="success"
             loading={loading}
@@ -125,7 +115,7 @@ export default function Dashboard() {
           <StatCard
             title="Low-Confidence"
             value={lowConfidenceCount}
-            subtext="AI confidence < 80%"
+            subtext="Confidence < 80%"
             icon={AlertTriangle}
             variant="warning"
             loading={loading}
@@ -168,7 +158,7 @@ export default function Dashboard() {
       {/* Recently Reviewed Records Table */}
       <Card
         title="Recently Reviewed Records"
-        subtitle="Recent decisions and corrections submitted by Verification Officers"
+        subtitle=""
         actions={
           <Link
             to="/history"

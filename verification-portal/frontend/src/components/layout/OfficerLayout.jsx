@@ -24,13 +24,8 @@ export default function OfficerLayout() {
         </main>
 
         <footer className="border-t border-slate-200 bg-white py-3.5 px-6 text-center text-xs text-slate-500">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 max-w-[1600px] mx-auto">
-            <span>
-              &copy; {new Date().getFullYear()} BhumiPatra Portal &bull; Verification Officer Workstation
-            </span>
-            <span className="text-[11px] text-slate-400">
-              Role: VERIFICATION_OFFICER &bull; Statutory Land Record Verification
-            </span>
+          <div className="max-w-[1600px] mx-auto">
+            BhumiPatra &copy; {new Date().getFullYear()}
           </div>
         </footer>
       </div>

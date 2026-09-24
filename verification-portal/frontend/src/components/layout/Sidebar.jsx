@@ -61,7 +61,7 @@ export default function Sidebar({ isOpen, onClose, isCollapsed = false, onToggle
             {isCollapsed ? (
               <Logo collapsed={true} size="md" />
             ) : (
-              <Logo variant="horizontal" size="sm" portalSubtitle="Verification Desk" theme="dark" />
+              <Logo variant="horizontal" size="sm" portalSubtitle="Verification Portal" theme="dark" />
             )}
           </div>
           <div className="flex items-center">
@@ -122,20 +122,6 @@ export default function Sidebar({ isOpen, onClose, isCollapsed = false, onToggle
             </div>
           ))}
         </div>
-
-        {!isCollapsed && (
-          <div className="p-3.5 border-t border-navy-800 text-[11px] text-slate-400 bg-navy-900/60">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-300">Station Status</span>
-              <span className="px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 text-[10px] font-mono">
-                VERIFIER READY
-              </span>
-            </div>
-            <div className="text-[10px] text-slate-400 mt-1">
-              Mandate: AI Land Record Audit
-            </div>
-          </div>
-        )}
       </aside>
     </>
   );

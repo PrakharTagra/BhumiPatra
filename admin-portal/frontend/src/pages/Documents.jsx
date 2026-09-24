@@ -135,7 +135,7 @@ export default function Documents() {
       ),
     },
     {
-      header: 'Processing Status',
+      header: 'Status',
       key: 'processingStatus',
       render: (doc) => (
         <Badge status={doc.processingStatus || doc.status || 'PENDING'} size="sm" />
@@ -192,11 +192,8 @@ export default function Documents() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Document Monitoring
+            Documents
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Audit-grade oversight of digitization pipeline and verification queues.
-          </p>
         </div>
         <Button
           variant="secondary"
@@ -377,7 +374,7 @@ export default function Documents() {
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] uppercase font-semibold text-slate-400 block">OCR Confidence</span>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 block">Confidence</span>
                 <span className="font-mono font-bold text-sm text-navy-950">
                   {selectedDoc.confidence !== undefined ? `${Number(selectedDoc.confidence).toFixed(1)}%` : '—'}
                 </span>
@@ -388,7 +385,7 @@ export default function Documents() {
             <div className="p-2.5 rounded bg-blue-50/60 border border-blue-200/70 text-blue-900 flex items-start gap-2 text-[11px]">
               <Lock className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
               <span>
-                <strong>Administrator Notice:</strong> Verified land titles and spatial indices are protected by role-based governance. Administrators oversee the pipeline and cannot modify land parcel details directly.
+                <strong>Administrator Notice:</strong> Cannot modify details directly in this view.
               </span>
             </div>
 

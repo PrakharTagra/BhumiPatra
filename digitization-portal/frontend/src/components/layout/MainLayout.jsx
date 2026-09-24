@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
-export const MainLayout = () => {
+export function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -38,21 +38,12 @@ export const MainLayout = () => {
 
           {/* Minimal Government-Portal-Style Footer */}
           <footer className="border-t border-slate-200 bg-white py-4 px-6 text-center text-xs text-slate-500 mt-auto">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto">
-              <p>
-                BhumiPatra Land Record Digitization & Validation Portal &copy; {new Date().getFullYear()}
-              </p>
-              <div className="flex items-center gap-4 text-[11px] text-slate-400">
-                <span>Restricted Access: Digitization Operators Only</span>
-                <span>•</span>
-                <span>System Security &amp; Audit Logging Active</span>
-              </div>
-            </div>
+            <p>BhumiPatra © {new Date().getFullYear()}</p>
           </footer>
         </main>
       </div>
     </div>
   );
-};
+}
 
 export default MainLayout;

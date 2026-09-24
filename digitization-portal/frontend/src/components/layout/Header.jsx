@@ -9,11 +9,10 @@ import {
   Shield,
   Menu,
   X,
-  Upload,
-  FileText
+  Upload
 } from 'lucide-react';
 
-export const Header = ({ onToggleSidebar, isSidebarOpen }) => {
+export function Header({ onToggleSidebar, isSidebarOpen }) {
   const { user, logout } = useAuth();
   const { info } = useToast();
   const navigate = useNavigate();
@@ -47,14 +46,8 @@ export const Header = ({ onToggleSidebar, isSidebarOpen }) => {
             </Link>
           </div>
 
-          {/* Center: System Header Info (Government-portal inspired clean subtitle) */}
-          <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>AI Land Record Digitization & Validation Pipeline</span>
-          </div>
-
           {/* Right: Quick Upload, Operator Badge, and Profile/Logout */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 ml-auto">
             <Link
               to="/upload"
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-navy-800 hover:bg-navy-900 rounded-md transition-colors shadow-xs"
@@ -84,7 +77,7 @@ export const Header = ({ onToggleSidebar, isSidebarOpen }) => {
                     {displayName}
                   </p>
                   <p className="text-[10px] text-slate-500 font-mono truncate max-w-[120px]">
-                    Operator Portal
+                    Digitization Portal
                   </p>
                 </div>
               </Link>
@@ -104,6 +97,6 @@ export const Header = ({ onToggleSidebar, isSidebarOpen }) => {
       </div>
     </header>
   );
-};
+}
 
 export default Header;

@@ -18,13 +18,10 @@ import {
   UploadCloud,
   FileSpreadsheet,
   ArrowRight,
-  RefreshCw,
-  ExternalLink,
-  Clock,
-  Layers
+  RefreshCw
 } from 'lucide-react';
 
-export const DashboardPage = () => {
+export function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -116,11 +113,8 @@ export const DashboardPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-            Digitization Operator Console
+            Dashboard
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Operational overview of scanned land records and AI digitization pipeline status
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -130,7 +124,6 @@ export const DashboardPage = () => {
             onClick={() => fetchDashboardData(true)}
             isLoading={refreshing}
             icon={RefreshCw}
-            title="Refresh API Data"
           >
             Refresh
           </Button>
@@ -146,7 +139,7 @@ export const DashboardPage = () => {
       {error && (
         <AlertBanner
           type="error"
-          title="Backend Connection Notice"
+          title="Connection Notice"
           message={error}
           onRetry={() => fetchDashboardData(false)}
         />
@@ -177,7 +170,7 @@ export const DashboardPage = () => {
             <StatCard
               title="Processing"
               value={stats.processing}
-              subtext="Active AI pipeline"
+              subtext="In progress"
               icon={Cpu}
               variant="processing"
             />
@@ -186,7 +179,7 @@ export const DashboardPage = () => {
             <StatCard
               title="Processed"
               value={stats.processed}
-              subtext="Digitized & archived"
+              subtext="Completed"
               icon={CheckCircle2}
               variant="success"
             />
@@ -195,7 +188,7 @@ export const DashboardPage = () => {
             <StatCard
               title="Needs Verification"
               value={stats.needsVerification}
-              subtext="Discrepancy flagged"
+              subtext="Awaiting review"
               icon={AlertTriangle}
               variant="warning"
             />
@@ -204,7 +197,7 @@ export const DashboardPage = () => {
             <StatCard
               title="Failed"
               value={stats.failed}
-              subtext="Scan or OCR errors"
+              subtext="Error"
               icon={XCircle}
               variant="danger"
             />
@@ -237,7 +230,7 @@ export const DashboardPage = () => {
           <EmptyState
             type="documents"
             title="No Documents Uploaded Yet"
-            description="No land records have been ingested into the system. As a Digitization Operator, you can start by uploading scanned legacy records."
+            description="No documents have been uploaded yet."
             actionText="Upload First Document"
             actionIcon={UploadCloud}
             onAction={() => window.location.href = '/upload'}
@@ -253,7 +246,7 @@ export const DashboardPage = () => {
                   <th scope="col" className="px-4 py-3">Document Type</th>
                   <th scope="col" className="px-4 py-3">Location (Dist / Tehsil / Vil)</th>
                   <th scope="col" className="px-4 py-3">Upload Date</th>
-                  <th scope="col" className="px-4 py-3">Pipeline Status</th>
+                  <th scope="col" className="px-4 py-3">Status</th>
                   <th scope="col" className="px-4 py-3">Confidence</th>
                   <th scope="col" className="px-4 py-3 text-right">Actions</th>
                 </tr>
@@ -296,9 +289,9 @@ export const DashboardPage = () => {
                           <Link
                             to={`/documents/${id}/processing`}
                             className="px-2 py-1 text-[11px] font-semibold text-sky-700 hover:text-sky-900 hover:bg-sky-50 rounded"
-                            title="Monitor AI Processing"
+                            title="View Processing"
                           >
-                            Pipeline
+                            Processing
                           </Link>
                           <Link
                             to={`/documents/${id}`}
@@ -317,41 +310,8 @@ export const DashboardPage = () => {
           </div>
         )}
       </div>
-
-      {/* Operator Workflow & SOP Guidance */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-lg bg-white border border-slate-200 shadow-xs">
-          <div className="flex items-center gap-2 font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">
-            <span className="w-5 h-5 rounded-full bg-navy-50 text-navy-800 flex items-center justify-center text-[10px]">1</span>
-            <span>Intake &amp; Scanning</span>
-          </div>
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Ensure legacy sheets (Jamabandi, Khasra, Naksha) are scanned flat, clean, and free of blur. Minimum recommended scan resolution: 300 DPI.
-          </p>
-        </div>
-
-        <div className="p-4 rounded-lg bg-white border border-slate-200 shadow-xs">
-          <div className="flex items-center gap-2 font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">
-            <span className="w-5 h-5 rounded-full bg-navy-50 text-navy-800 flex items-center justify-center text-[10px]">2</span>
-            <span>Metadata Tagging Only</span>
-          </div>
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Digitization Operators tag only Document Type, State, District, Tehsil, Village, and Record Year. Never manually enter owner names or land areas.
-          </p>
-        </div>
-
-        <div className="p-4 rounded-lg bg-white border border-slate-200 shadow-xs">
-          <div className="flex items-center gap-2 font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">
-            <span className="w-5 h-5 rounded-full bg-navy-50 text-navy-800 flex items-center justify-center text-[10px]">3</span>
-            <span>AI Pipeline Monitoring</span>
-          </div>
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Track live execution across Preprocessing, OCR, Extraction, Validation, and Confidence Analysis. Re-trigger pipeline if an intermittent scan error occurs.
-          </p>
-        </div>
-      </div>
     </div>
   );
-};
+}
 
 export default DashboardPage;

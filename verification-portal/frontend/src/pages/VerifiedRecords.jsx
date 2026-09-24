@@ -145,11 +145,8 @@ export default function VerifiedRecords() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Verified Records Repository
+            Verified Records
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Official repository of approved land titles verified by authorized officers.
-          </p>
         </div>
         <Button variant="secondary" size="sm" icon={RefreshCw} loading={loading} onClick={fetchVerified}>
           Refresh

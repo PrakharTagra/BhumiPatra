@@ -6,9 +6,9 @@ import BhumiPatraLogo from '../components/common/BhumiPatraLogo';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import AlertBanner from '../components/common/AlertBanner';
-import { Lock, Mail, ShieldCheck, Eye, EyeOff, FileText, Cpu, CheckCircle } from 'lucide-react';
+import { Lock, Mail, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
-export const LoginPage = () => {
+export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -58,12 +58,6 @@ export const LoginPage = () => {
         <h1 className="text-2xl font-bold tracking-tight text-navy-950">
           BhumiPatra
         </h1>
-        <p className="text-sm font-medium text-slate-700 mt-1">
-          AI-Powered Intelligent Land Record
-        </p>
-        <p className="text-xs text-slate-500 font-medium">
-          Digitization &amp; Validation System
-        </p>
         <div className="mt-2.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-navy-800 border border-sky-200">
           Digitization Operator Portal
         </div>
@@ -75,8 +69,7 @@ export const LoginPage = () => {
           <div className="mb-6 p-3 rounded-md bg-navy-50 border border-navy-100 text-xs text-navy-900 flex items-center gap-2.5">
             <ShieldCheck className="w-5 h-5 text-navy-700 shrink-0" />
             <div>
-              <span className="font-bold">Operator Access:</span> Portal restricted to authorized{' '}
-              <strong className="font-semibold text-navy-800">DIGITIZATION_OPERATOR</strong> personnel.
+              Access restricted to authorized personnel.
             </div>
           </div>
 
@@ -141,38 +134,14 @@ export const LoginPage = () => {
                 isLoading={isLoading}
                 className="w-full text-sm font-semibold py-2.5 bg-navy-800 hover:bg-navy-900"
               >
-                Sign In to Operator Console
+                Sign In
               </Button>
             </div>
           </form>
-
-          {/* System Guidelines Checklist */}
-          <div className="mt-8 pt-5 border-t border-slate-100 text-[11px] text-slate-500 space-y-1.5">
-            <div className="font-semibold text-slate-700 uppercase tracking-wider text-[10px]">
-              Security &amp; Compliance SOP:
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>Ensure scanned documents are in PDF, JPG, PNG or TIFF format</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>Never manually fabricate or alter land parcel records</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>All operator activities are timestamped and cryptographically audited</span>
-            </div>
-          </div>
         </div>
-
-        {/* Footer info */}
-        <p className="mt-6 text-center text-xs text-slate-500">
-          BhumiPatra Land Record Digitization Portal &bull; Node.js/MongoDB Backend Integration Ready
-        </p>
       </div>
     </div>
   );
-};
+}
 
 export default LoginPage;

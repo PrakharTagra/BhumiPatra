@@ -25,7 +25,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 
-export const UploadPage = () => {
+export function UploadPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
 
@@ -124,7 +124,7 @@ export const UploadPage = () => {
       const newDoc = response?.document || response?.data?.document || response?.data || response;
       const documentId = newDoc?._id || newDoc?.id || newDoc?.documentId;
 
-      success('Document uploaded successfully. AI digitization pipeline initiated.', 'Upload Complete');
+      success('Document uploaded successfully. Processing started.', 'Upload Complete');
 
       if (documentId) {
         // Redirect directly to real-time Processing Details page for this document
@@ -153,21 +153,7 @@ export const UploadPage = () => {
             Upload Scanned Land Record
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Ingest scanned legacy documents for autonomous AI Preprocessing, OCR, Extraction and Area Validation
-          </p>
-        </div>
-      </div>
-
-      {/* Operator SOP Constraint Notice */}
-      <div className="p-4 rounded-lg bg-navy-50/70 border border-navy-200/80 text-xs text-navy-950 flex items-start gap-3">
-        <ShieldAlert className="w-5 h-5 text-navy-700 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <p className="font-semibold text-navy-900">
-            Operator SOP Requirement: Administrative Metadata Only
-          </p>
-          <p className="text-slate-600 leading-relaxed">
-            As a Digitization Operator, collect <strong>only the 6 administrative attributes</strong> below (Document Type, State, District, Tehsil, Village, Record Year).
-            <strong> Do not manually type or transcribe land parcels, owner names, or area measurements.</strong> All land data will be extracted autonomously by the AI OCR &amp; Entity Extraction model.
+            Upload a scanned land record document for processing
           </p>
         </div>
       </div>
@@ -223,7 +209,7 @@ export const UploadPage = () => {
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-navy-800 flex items-center gap-1.5">
                   <UploadCloud className="w-4 h-4 animate-bounce text-navy-700" />
-                  Streaming document to secure storage...
+                  Uploading document...
                 </span>
                 <span className="font-mono font-bold text-navy-900">{uploadProgress}%</span>
               </div>
@@ -393,12 +379,12 @@ export const UploadPage = () => {
             icon={UploadCloud}
             className="w-full sm:w-auto"
           >
-            {isUploading ? `Uploading (${uploadProgress}%)...` : 'Upload & Start AI Processing'}
+            {isUploading ? `Uploading (${uploadProgress}%)...` : 'Upload & Process'}
           </Button>
         </div>
       </form>
     </div>
   );
-};
+}
 
 export default UploadPage;

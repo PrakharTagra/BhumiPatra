@@ -30,7 +30,7 @@ import {
   Hash
 } from 'lucide-react';
 
-export const DocumentDetailPage = () => {
+export function DocumentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
@@ -63,10 +63,10 @@ export const DocumentDetailPage = () => {
     try {
       setIsRetrying(true);
       await documentsApi.triggerProcess(id);
-      success('AI Processing job initiated for document.', 'Processing Triggered');
+      success('Processing started.', 'Processing Triggered');
       navigate(`/documents/${id}/processing`);
     } catch (err) {
-      toastError(err.message || 'Failed to re-trigger AI processing.');
+      toastError(err.message || 'Failed to re-trigger processing.');
     } finally {
       setIsRetrying(false);
     }
@@ -76,7 +76,7 @@ export const DocumentDetailPage = () => {
     return (
       <div className="space-y-6">
         <Breadcrumbs items={[{ label: 'Documents', to: '/documents' }, { label: 'Loading Document...' }]} />
-        <LoadingSpinner label="Fetching Land Record Details from Backend..." size="lg" className="py-20" />
+        <LoadingSpinner label="Loading document details..." size="lg" className="py-20" />
       </div>
     );
   }
@@ -143,7 +143,7 @@ export const DocumentDetailPage = () => {
           <div className="flex items-center gap-2">
             <Link to={`/documents/${docId}/processing`}>
               <Button variant="secondary" size="sm" icon={Cpu}>
-                Processing Pipeline
+                Processing Status
               </Button>
             </Link>
 
@@ -162,7 +162,7 @@ export const DocumentDetailPage = () => {
         {/* Confidence Banner */}
         <div className="pt-4 flex flex-wrap items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 font-medium">AI Extraction Confidence:</span>
+            <span className="text-slate-500 font-medium">Confidence:</span>
             <ConfidenceBadge confidence={confidence} size="md" />
           </div>
 
@@ -224,7 +224,7 @@ export const DocumentDetailPage = () => {
               <div className="flex items-center gap-2">
                 <FileCheck2 className="w-4 h-4 text-emerald-600" />
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                  AI-Extracted Land Records (Read-Only)
+                  Extracted Data
                 </h2>
               </div>
               <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-navy-50 text-navy-800 border border-navy-200">
@@ -234,7 +234,7 @@ export const DocumentDetailPage = () => {
 
             {/* Read-Only SOP Disclaimer */}
             <div className="mb-4 p-3 rounded bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed">
-              <strong className="text-slate-800">Operator SOP Protocol:</strong> Extracted land records are generated autonomously by the OCR &amp; Entity Extraction pipeline. Digitization Operators have read-only inspection access. Any discrepancies will be verified by designated Revenue Officers during the verification phase.
+              Extracted data is read-only.
             </div>
 
             {extracted ? (
@@ -311,10 +311,10 @@ export const DocumentDetailPage = () => {
                 title="No Extracted Land Data Yet"
                 description={
                   status === 'COMPLETED'
-                    ? 'No land parcel entities were identified in this document by the AI extraction model.'
-                    : 'Extraction is either pending or in progress. Check the Processing Pipeline for live status.'
+                    ? 'No land parcel entities were identified in this document.'
+                    : 'Extraction is either pending or in progress.'
                 }
-                actionText="View Processing Pipeline"
+                actionText="View Processing Status"
                 actionIcon={Cpu}
                 onAction={() => navigate(`/documents/${docId}/processing`)}
                 className="py-10 border-0"
@@ -360,7 +360,7 @@ export const DocumentDetailPage = () => {
           {/* Pipeline Quick Access */}
           <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-xs">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 pb-2 border-b border-slate-100">
-              AI Pipeline Status
+              Processing Status
             </h2>
             <div className="flex items-center justify-between text-xs mb-3">
               <span className="text-slate-500">Processing Stage:</span>
@@ -372,7 +372,7 @@ export const DocumentDetailPage = () => {
             </div>
             <Link to={`/documents/${docId}/processing`} className="w-full block">
               <Button variant="secondary" size="sm" icon={Cpu} className="w-full justify-center">
-                Open Processing Monitor
+                View Processing
               </Button>
             </Link>
           </div>
@@ -380,6 +380,6 @@ export const DocumentDetailPage = () => {
       </div>
     </div>
   );
-};
+}
 
 export default DocumentDetailPage;

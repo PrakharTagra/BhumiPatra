@@ -39,7 +39,7 @@ export function ApproveModal({ isOpen, onClose, onConfirm, loading, recordId }) 
           <div className="space-y-1">
             <h4 className="font-semibold text-sm">Confirmation Required</h4>
             <p className="leading-relaxed">
-              By confirming approval, you certify as a <strong>Verification Officer</strong> that the AI-extracted fields, parcel identifiers, and spatial boundaries match the original deed instrument.
+              By confirming approval, you certify as a <strong>Verification Officer</strong> that the extracted fields, parcel identifiers, and spatial boundaries match the original deed instrument.
             </p>
           </div>
         </div>

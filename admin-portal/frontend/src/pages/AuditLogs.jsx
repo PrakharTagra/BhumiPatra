@@ -161,9 +161,6 @@ export default function AuditLogs() {
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
             Audit Logs
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Tamper-evident trail of user sessions, document operations, and administrative events.
-          </p>
         </div>
         <Button
           variant="secondary"

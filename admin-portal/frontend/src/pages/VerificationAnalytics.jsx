@@ -75,9 +75,6 @@ export default function VerificationAnalytics() {
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
             Verification Analytics
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Officer sign-off ratios, rejection taxonomy, and verification completion trends.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -115,7 +112,6 @@ export default function VerificationAnalytics() {
         {/* Verification Status Breakdown */}
         <Card
           title="Verification Status Distribution"
-          subtitle="Proportion of verified, pending, and rejected records"
         >
           {loading ? (
             <div className="h-64 flex items-center justify-center">
@@ -161,8 +157,7 @@ export default function VerificationAnalytics() {
 
         {/* Rejection Reasons Taxonomy */}
         <Card
-          title="Rejection Taxonomy / Discrepancy Reasons"
-          subtitle="Frequent reasons flagged by Verification Officers"
+          title="Rejection Reasons"
         >
           {loading ? (
             <div className="h-64 flex items-center justify-center">
@@ -199,7 +194,6 @@ export default function VerificationAnalytics() {
         {/* District Verification Progress */}
         <Card
           title="District-wise Verification Progress"
-          subtitle="Verified vs Rejected records by administrative jurisdiction"
         >
           {loading ? (
             <div className="h-64 flex items-center justify-center">
@@ -236,10 +230,9 @@ export default function VerificationAnalytics() {
           )}
         </Card>
 
-        {/* OCR Confidence Distribution */}
+        {/* Confidence Distribution */}
         <Card
           title="Confidence Score Distribution"
-          subtitle="Verification correlation with automated confidence bands"
         >
           {loading ? (
             <div className="h-64 flex items-center justify-center">

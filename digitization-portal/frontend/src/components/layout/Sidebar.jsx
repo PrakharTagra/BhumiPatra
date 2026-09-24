@@ -6,14 +6,11 @@ import {
   UploadCloud,
   FileSpreadsheet,
   UserCheck,
-  HelpCircle,
-  FileCheck,
-  AlertCircle,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 
-export const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) => {
+export function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
   const navItems = [
     {
       to: '/dashboard',
@@ -25,7 +22,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse
       to: '/upload',
       label: 'Upload Document',
       icon: UploadCloud,
-      badge: 'Scan'
+      badge: null
     },
     {
       to: '/documents',
@@ -66,7 +63,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse
             {isCollapsed ? (
               <BhumiPatraLogo collapsed={true} size="md" />
             ) : (
-              <BhumiPatraLogo variant="horizontal" size="sm" portalSubtitle="Digitization Ops" theme="dark" />
+              <BhumiPatraLogo variant="horizontal" size="sm" portalSubtitle="Digitization Portal" theme="dark" />
             )}
             {onToggleCollapse && (
               <button
@@ -83,12 +80,6 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse
 
           {/* Navigation List */}
           <div className="py-4 px-3 space-y-1">
-            {!isCollapsed && (
-              <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Digitization Operations
-              </div>
-            )}
-
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -119,26 +110,9 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed = false, onToggleCollapse
           })}
           </div>
         </div>
-
-        {/* Operator SOP Guidance Card */}
-        {!isCollapsed && (
-          <div className="p-3 m-3 rounded-lg bg-slate-800/70 border border-slate-700/60 text-xs">
-            <div className="flex items-center gap-1.5 text-sky-400 font-semibold mb-1">
-              <AlertCircle className="w-3.5 h-3.5" />
-              <span>Operator SOP Notice</span>
-            </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              Upload original scanned records in legible resolution (min 300 DPI). AI pipeline autonomously extracts land parcel & owner entities.
-            </p>
-            <div className="mt-2.5 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
-              <span>Role: DIGITIZATION_OPERATOR</span>
-              <span className="text-emerald-400 font-medium">Active</span>
-            </div>
-          </div>
-        )}
       </aside>
     </>
   );
-};
+}
 
 export default Sidebar;

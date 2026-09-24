@@ -135,11 +135,8 @@ export default function RejectedRecords() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Rejected Records Repository
+            Rejected Records
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Land instruments flagged for title discrepancies, illegibility, or failed validation.
-          </p>
         </div>
         <Button variant="secondary" size="sm" icon={RefreshCw} loading={loading} onClick={fetchRejected}>
           Refresh

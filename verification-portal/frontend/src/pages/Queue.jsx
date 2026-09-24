@@ -220,11 +220,8 @@ export default function Queue() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Land Record Verification Queue
+            Verification Queue
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Examine scanned land instruments, validate extracted titles, and record official dispositions.
-          </p>
         </div>
         <Button
           variant="secondary"
