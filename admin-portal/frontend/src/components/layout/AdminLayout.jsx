@@ -5,14 +5,20 @@ import Navbar from './Navbar';
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex">
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isCollapsed={isCollapsed}
+        onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
+      />
 
       {/* Main layout container */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
+      <div className={`flex-1 flex flex-col min-w-0 ${isCollapsed ? 'lg:pl-20' : 'lg:pl-64'} transition-all duration-300`}>
         {/* Top Navbar */}
         <Navbar onMenuToggle={() => setSidebarOpen((prev) => !prev)} />
 

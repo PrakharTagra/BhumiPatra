@@ -84,14 +84,20 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
         <div className="inline-flex justify-center mb-3">
-          <Logo size="lg" />
+          <Logo variant="full" size="xl" className="max-h-28" />
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-          Officer Verification Desk
-        </h2>
-        <p className="mt-1 text-xs sm:text-sm text-slate-600">
-          Land Records AI Validation & Decision Workstation
+        <h1 className="text-2xl font-bold tracking-tight text-navy-950">
+          BhumiPatra
+        </h1>
+        <p className="text-sm font-medium text-slate-700 mt-1">
+          AI-Powered Intelligent Land Record
         </p>
+        <p className="text-xs text-slate-500 font-medium">
+          Digitization &amp; Validation System
+        </p>
+        <div className="mt-2.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-900 border border-blue-200">
+          Officer Verification Desk
+        </div>
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
@@ -116,7 +122,7 @@ export default function Login() {
                 label="Official Email Address"
                 type="email"
                 name="email"
-                placeholder="officer@bhumipatra.gov"
+                placeholder="officer@bhumipatra.in"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);

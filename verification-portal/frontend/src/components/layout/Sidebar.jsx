@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import Logo from '../common/Logo';
 import {
   LayoutDashboard,
   Inbox,
@@ -8,6 +9,8 @@ import {
   History,
   UserCheck,
   X,
+  ChevronLeft,
+  ChevronRight,
   ShieldCheck,
   FileCheck,
 } from 'lucide-react';
@@ -36,7 +39,7 @@ const NAV_ITEMS = [
   },
 ];
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
   return (
     <>
       {isOpen && (
@@ -48,43 +51,50 @@ export default function Sidebar({ isOpen, onClose }) {
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-navy-950 text-slate-300 border-r border-navy-800 flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 ${isCollapsed ? 'w-20' : 'w-64'} bg-navy-950 text-slate-300 border-r border-navy-800 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="h-16 px-5 border-b border-navy-800 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-              <FileCheck className="w-5 h-5" />
-            </div>
-            <div className="leading-tight">
-              <div className="text-white font-bold text-sm tracking-wide flex items-center gap-1.5">
-                BhumiPatra
-                <span className="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-400/30 px-1 py-0.2 rounded font-semibold uppercase">
-                  Officer
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-400 font-medium block">
-                Verification Portal
-              </span>
-            </div>
+        {/* Top Brand Header */}
+        <div className={`h-16 px-3 border-b border-navy-800 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+          <div className="flex items-center overflow-hidden">
+            {isCollapsed ? (
+              <Logo collapsed={true} size="md" />
+            ) : (
+              <Logo variant="horizontal" size="sm" portalSubtitle="Verification Desk" theme="dark" />
+            )}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="lg:hidden text-slate-400 hover:text-white p-1 rounded-md"
-            aria-label="Close menu"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center">
+            {onToggleCollapse && (
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                className="hidden lg:flex p-1.5 text-slate-400 hover:text-white hover:bg-navy-900 rounded-md transition-colors"
+                title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+                aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              >
+                {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="lg:hidden text-slate-400 hover:text-white p-1 rounded-md"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
           {NAV_ITEMS.map((section, idx) => (
             <div key={idx} className="space-y-1">
-              <div className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                {section.category}
-              </div>
+              {!isCollapsed && (
+                <div className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                  {section.category}
+                </div>
+              )}
               <nav className="mt-1 space-y-0.5">
                 {section.items.map((item) => {
                   const Icon = item.icon;
@@ -94,8 +104,9 @@ export default function Sidebar({ isOpen, onClose }) {
                       to={item.to}
                       end={item.to === '/'}
                       onClick={() => onClose && onClose()}
+                      title={isCollapsed ? item.label : undefined}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                        `flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
                           isActive
                             ? 'bg-blue-600 text-white shadow-sm font-semibold'
                             : 'text-slate-300 hover:text-white hover:bg-navy-900'
@@ -103,7 +114,7 @@ export default function Sidebar({ isOpen, onClose }) {
                       }
                     >
                       <Icon className="w-4 h-4 flex-shrink-0" />
-                      <span>{item.label}</span>
+                      {!isCollapsed && <span>{item.label}</span>}
                     </NavLink>
                   );
                 })}
@@ -112,17 +123,19 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </div>
 
-        <div className="p-3.5 border-t border-navy-800 text-[11px] text-slate-400 bg-navy-900/60">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold text-slate-300">Station Status</span>
-            <span className="px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 text-[10px] font-mono">
-              VERIFIER READY
-            </span>
+        {!isCollapsed && (
+          <div className="p-3.5 border-t border-navy-800 text-[11px] text-slate-400 bg-navy-900/60">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-slate-300">Station Status</span>
+              <span className="px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 text-[10px] font-mono">
+                VERIFIER READY
+              </span>
+            </div>
+            <div className="text-[10px] text-slate-400 mt-1">
+              Mandate: AI Land Record Audit
+            </div>
           </div>
-          <div className="text-[10px] text-slate-400 mt-1">
-            Mandate: AI Land Record Audit
-          </div>
-        </div>
+        )}
       </aside>
     </>
   );

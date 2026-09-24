@@ -1,49 +1,91 @@
 import React from 'react';
+import logoTransparent from '../../assets/branding/bhumipatra-logo-transparent.png';
+import iconMark from '../../assets/branding/bhumipatra-icon.png';
 
-export default function Logo({ size = 'md', collapsed = false, className = '' }) {
-  const sizeMap = {
-    sm: { icon: 'w-6 h-6', text: 'text-sm', sub: 'text-[9px]' },
-    md: { icon: 'w-8 h-8', text: 'text-base', sub: 'text-[10px]' },
-    lg: { icon: 'w-10 h-10', text: 'text-lg', sub: 'text-xs' },
-    xl: { icon: 'w-12 h-12', text: 'text-xl', sub: 'text-xs' },
+/**
+ * Official BhumiPatra Logo Component for Verification Portal
+ */
+export default function Logo({
+  size = 'md',
+  collapsed = false,
+  variant = 'horizontal', // 'horizontal' | 'full' | 'icon'
+  className = '',
+  portalSubtitle = 'Land Record Verification Portal',
+  theme = 'light',
+}) {
+  const iconSizes = {
+    xs: 'w-6 h-6',
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12',
+    xl: 'w-16 h-16',
   };
 
-  const currentSize = sizeMap[size] || sizeMap.md;
+  const fullLogoSizes = {
+    xs: 'h-8 max-w-[120px]',
+    sm: 'h-10 max-w-[150px]',
+    md: 'h-12 max-w-[180px]',
+    lg: 'h-16 max-w-[240px]',
+    xl: 'h-24 sm:h-28 max-w-[320px]',
+  };
 
-  return (
-    <div className={`flex items-center gap-2.5 ${className}`}>
-      {/* Clean BhumiPatra Logo Placeholder Icon */}
-      <div className={`relative flex items-center justify-center rounded-lg bg-navy-900 border border-navy-700 shadow-sm flex-shrink-0 ${currentSize.icon}`}>
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="w-3/5 h-3/5 text-blue-400"
-        >
-          <polygon points="12 2 2 7 12 12 22 7 12 2" />
-          <polyline points="2 17 12 22 22 17" />
-          <polyline points="2 12 12 17 22 12" />
-        </svg>
+  const textSizes = {
+    xs: 'text-sm',
+    sm: 'text-base',
+    md: 'text-lg',
+    lg: 'text-xl',
+    xl: 'text-2xl',
+  };
+
+  // If collapsed or explicit icon variant, render the compact icon mark
+  if (collapsed || variant === 'icon') {
+    return (
+      <div className={`inline-flex items-center justify-center shrink-0 ${className}`}>
+        <img
+          src={iconMark}
+          alt="BhumiPatra Icon"
+          className={`${iconSizes[size] || iconSizes.md} object-contain transition-transform duration-200 hover:scale-105`}
+        />
       </div>
+    );
+  }
 
-      {!collapsed && (
-        <div className="flex flex-col leading-none select-none">
-          <div className="flex items-center gap-1.5">
-            <span className={`font-bold tracking-tight text-navy-950 ${currentSize.text}`}>
-              BhumiPatra
-            </span>
-            <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">
-              Verification
-            </span>
-          </div>
-          <span className={`text-slate-500 font-medium tracking-normal mt-0.5 ${currentSize.sub}`}>
-            Land Record Verification Portal
+  // Full brand logo (for login pages, prominent hero banners, or expanded sidebar)
+  if (variant === 'full') {
+    return (
+      <div className={`inline-flex flex-col items-center justify-center select-none ${className}`}>
+        <img
+          src={logoTransparent}
+          alt="BhumiPatra - AI-Powered Land Record Digitization & Validation System"
+          className={`${fullLogoSizes[size] || fullLogoSizes.md} w-auto object-contain transition-all duration-200`}
+        />
+      </div>
+    );
+  }
+
+  const isDark = theme === 'dark';
+
+  // Horizontal lockup: [BhumiPatra Icon] BhumiPatra + Subtitle/Badge
+  return (
+    <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
+      <img
+        src={iconMark}
+        alt="BhumiPatra"
+        className={`${iconSizes[size] || iconSizes.md} shrink-0 object-contain`}
+      />
+      <div className="flex flex-col leading-none">
+        <div className="flex items-center gap-1.5">
+          <span className={`font-bold tracking-tight font-sans ${isDark ? 'text-white' : 'text-navy-950'} ${textSizes[size] || textSizes.md}`}>
+            Bhumi<span className="text-emerald-500">Patra</span>
+          </span>
+          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">
+            Officer
           </span>
         </div>
-      )}
+        <span className={`text-[10px] font-medium tracking-normal mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          {portalSubtitle}
+        </span>
+      </div>
     </div>
   );
 }

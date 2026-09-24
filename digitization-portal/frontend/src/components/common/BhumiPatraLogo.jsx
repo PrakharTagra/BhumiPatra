@@ -1,70 +1,91 @@
 import React from 'react';
+import logoTransparent from '../../assets/branding/bhumipatra-logo-transparent.png';
+import iconMark from '../../assets/branding/bhumipatra-icon.png';
 
 /**
- * BhumiPatra Brand Logo Component
- * A clean, distinct logo for the AI Land Record Digitization Portal
- * (Does NOT copy or use any government seals or emblems)
+ * Official BhumiPatra Logo Component
+ * Uses official brand assets without distortion or stretching.
  */
-export const BhumiPatraLogo = ({ className = '', size = 'md', collapsed = false }) => {
+export const BhumiPatraLogo = ({
+  className = '',
+  size = 'md',
+  collapsed = false,
+  variant = 'horizontal', // 'horizontal' | 'full' | 'icon'
+  portalSubtitle = 'Digitization Portal',
+  theme = 'light', // 'light' | 'dark'
+}) => {
+  // Size mapping for compact icon mark
   const iconSizes = {
-    sm: 'w-6 h-6',
-    md: 'w-8 h-8',
-    lg: 'w-10 h-10',
-    xl: 'w-12 h-12',
+    xs: 'w-6 h-6',
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12',
+    xl: 'w-16 h-16',
+  };
+
+  // Size mapping for full logo image
+  const fullLogoSizes = {
+    xs: 'h-8 max-w-[120px]',
+    sm: 'h-10 max-w-[150px]',
+    md: 'h-12 max-w-[180px]',
+    lg: 'h-16 max-w-[240px]',
+    xl: 'h-24 sm:h-28 max-w-[320px]',
   };
 
   const titleSizes = {
+    xs: 'text-sm',
     sm: 'text-base',
     md: 'text-lg',
     lg: 'text-xl',
     xl: 'text-2xl',
   };
 
-  return (
-    <div className={`flex items-center gap-2.5 select-none ${className}`}>
-      {/* Brand Icon: Stylized Geometric Cadastral Grid & Digital Document */}
-      <div className={`relative shrink-0 flex items-center justify-center rounded-lg bg-navy-900 text-white shadow-sm ring-1 ring-navy-800 ${iconSizes[size] || iconSizes.md}`}>
-        <svg
-          viewBox="0 0 32 32"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-4/5 h-4/5 text-sky-400"
-          aria-hidden="true"
-        >
-          {/* Cadastral Land Parcel Grid lines */}
-          <path
-            d="M6 8C6 6.89543 6.89543 6 8 6H24C25.1046 6 26 6.89543 26 8V24C26 25.1046 25.1046 26 24 26H8C6.89543 26 6 25.1046 6 24V8Z"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            className="text-sky-300"
-          />
-          {/* Internal Land Boundaries / Map Segments */}
-          <path
-            d="M6 16H26M18 6V26M18 16L26 24M6 16L18 8"
-            stroke="#93c5fd"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {/* AI Node / Golden Validation Pin */}
-          <circle cx="18" cy="16" r="2.5" fill="#f59e0b" stroke="#ffffff" strokeWidth="1" />
-          <circle cx="22" cy="11" r="1.5" fill="#38bdf8" />
-        </svg>
+  // If collapsed or explicit icon variant, render the compact icon mark
+  if (collapsed || variant === 'icon') {
+    return (
+      <div className={`inline-flex items-center justify-center shrink-0 ${className}`}>
+        <img
+          src={iconMark}
+          alt="BhumiPatra Icon"
+          className={`${iconSizes[size] || iconSizes.md} object-contain transition-transform duration-200 hover:scale-105`}
+        />
       </div>
+    );
+  }
 
-      {!collapsed && (
-        <div className="flex flex-col">
-          <div className="flex items-center gap-1.5">
-            <span className={`font-bold tracking-tight text-navy-950 font-sans ${titleSizes[size] || titleSizes.md}`}>
-              BHUMI<span className="text-navy-600">PATRA</span>
-            </span>
-          </div>
-          <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 -mt-1">
-            Digitization Portal
+  // Full brand logo (for login pages, prominent hero banners, or expanded sidebar)
+  if (variant === 'full') {
+    return (
+      <div className={`inline-flex flex-col items-center justify-center select-none ${className}`}>
+        <img
+          src={logoTransparent}
+          alt="BhumiPatra - AI-Powered Land Record Digitization & Validation System"
+          className={`${fullLogoSizes[size] || fullLogoSizes.md} w-auto object-contain transition-all duration-200`}
+        />
+      </div>
+    );
+  }
+
+  const isDark = theme === 'dark';
+
+  // Horizontal lockup: [BhumiPatra Icon] BhumiPatra + Subtitle/Badge
+  return (
+    <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
+      <img
+        src={iconMark}
+        alt="BhumiPatra"
+        className={`${iconSizes[size] || iconSizes.md} shrink-0 object-contain`}
+      />
+      <div className="flex flex-col leading-tight">
+        <span className={`font-bold tracking-tight font-sans ${isDark ? 'text-white' : 'text-navy-950'} ${titleSizes[size] || titleSizes.md}`}>
+          Bhumi<span className="text-emerald-500">Patra</span>
+        </span>
+        {portalSubtitle && (
+          <span className={`text-[10px] uppercase tracking-wider font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            {portalSubtitle}
           </span>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

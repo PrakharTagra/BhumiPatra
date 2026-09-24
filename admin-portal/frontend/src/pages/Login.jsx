@@ -85,14 +85,20 @@ export default function Login() {
       {/* Top Header / Portal Branding */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
         <div className="inline-flex justify-center mb-3">
-          <Logo size="lg" />
+          <Logo variant="full" size="xl" className="max-h-28" />
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-          Administrator Sign In
-        </h2>
-        <p className="mt-1 text-xs sm:text-sm text-slate-600">
-          Land Records Modernization & Digitization Governance
+        <h1 className="text-2xl font-bold tracking-tight text-navy-950">
+          BhumiPatra
+        </h1>
+        <p className="text-sm font-medium text-slate-700 mt-1">
+          AI-Powered Intelligent Land Record
         </p>
+        <p className="text-xs text-slate-500 font-medium">
+          Digitization &amp; Validation System
+        </p>
+        <div className="mt-2.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-navy-100 text-navy-900 border border-navy-200">
+          Administrator Governance Portal
+        </div>
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
@@ -117,7 +123,7 @@ export default function Login() {
                 label="Official Email Address"
                 type="email"
                 name="email"
-                placeholder="admin@bhumipatra.gov"
+                placeholder="admin@bhumipatra.in"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);

@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   CheckCircle,
 } from 'lucide-react';
+import Logo from '../common/Logo';
 import Badge from '../common/Badge';
 
 export default function Navbar({ onMenuToggle }) {
@@ -44,12 +45,8 @@ export default function Navbar({ onMenuToggle }) {
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500">
-          <span className="font-semibold text-navy-950 uppercase tracking-wider text-[11px]">
-            BhumiPatra
-          </span>
-          <span>/</span>
-          <span className="font-medium text-slate-700">Land Record AI Verification Desk</span>
+        <div className="flex items-center gap-2">
+          <Logo size="sm" variant="horizontal" portalSubtitle="Land Record Verification Desk" />
         </div>
       </div>
 

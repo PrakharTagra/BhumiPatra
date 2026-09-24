@@ -50,17 +50,23 @@ export const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Top Government-Portal-Style Header Banner */}
+      {/* Top BhumiPatra Header Branding */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
         <div className="inline-flex justify-center mb-3">
-          <BhumiPatraLogo size="lg" />
+          <BhumiPatraLogo variant="full" size="xl" className="max-h-28" />
         </div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-          Land Record Digitization Portal
+        <h1 className="text-2xl font-bold tracking-tight text-navy-950">
+          BhumiPatra
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Autonomous AI Preprocessing, OCR &amp; Parcel Validation System
+        <p className="text-sm font-medium text-slate-700 mt-1">
+          AI-Powered Intelligent Land Record
         </p>
+        <p className="text-xs text-slate-500 font-medium">
+          Digitization &amp; Validation System
+        </p>
+        <div className="mt-2.5 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-navy-800 border border-sky-200">
+          Digitization Operator Portal
+        </div>
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -95,7 +101,7 @@ export const LoginPage = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="operator@bhumipatra.gov"
+                placeholder="operator@bhumipatra.in"
                 icon={Mail}
                 disabled={isLoading}
               />
