@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import env from '../config/env.js';
 import { sendSuccess, sendError } from '../utils/response.js';
-import { ERROR_CODES, AUDIT_ACTIONS } from '../config/constants.js';
+import { ERROR_CODES, AUDIT_ACTIONS, ROLES } from '../config/constants.js';
 import auditService from '../services/auditService.js';
 
 export const authController = {
@@ -70,9 +71,14 @@ export const authController = {
 
       const userObject = user.toJSON();
 
-      return sendSuccess(res, {
+      return res.status(200).json({
+        success: true,
         token,
         user: userObject,
+        data: {
+          token,
+          user: userObject,
+        },
       });
     } catch (error) {
       next(error);
@@ -90,8 +96,110 @@ export const authController = {
         return sendError(res, 'User profile not found.', ERROR_CODES.NOT_FOUND, 404);
       }
 
-      return sendSuccess(res, {
-        user: user.toJSON(),
+      const userObject = user.toJSON();
+      return res.status(200).json({
+        success: true,
+        user: userObject,
+        data: {
+          user: userObject,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * User Logout
+   * POST /api/auth/logout
+   */
+  async logout(req, res, next) {
+    try {
+      if (req.user) {
+        await auditService.log({
+          userId: req.user._id || req.user.id,
+          action: AUDIT_ACTIONS.USER_LOGOUT,
+          entityType: 'USER',
+          entityId: req.user._id || req.user.id,
+          description: `User logged out.`,
+          req,
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Logged out successfully.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Initial Setup for Administrator
+   * POST /api/auth/setup
+   * Only permitted when zero users exist in the database.
+   */
+  async setupInitialAdmin(req, res, next) {
+    try {
+      const userCount = await User.countDocuments();
+      if (userCount > 0) {
+        return sendError(
+          res,
+          'System setup has already been completed. An administrator account already exists. Please log in through the Administrator Portal.',
+          ERROR_CODES.FORBIDDEN,
+          403
+        );
+      }
+
+      const { name, email, password, department, state, district, tehsil } = req.body;
+
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, salt);
+
+      const adminUser = await User.create({
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        passwordHash,
+        role: ROLES.ADMIN,
+        department: department || 'Land Records & Revenue Department',
+        state: state || 'Uttar Pradesh',
+        district: district || 'Lucknow',
+        tehsil: tehsil || 'Sadar',
+        isActive: true,
+      });
+
+      const token = jwt.sign(
+        {
+          id: adminUser._id,
+          role: adminUser.role,
+          email: adminUser.email,
+        },
+        env.JWT_SECRET,
+        {
+          expiresIn: env.JWT_EXPIRES_IN,
+        }
+      );
+
+      await auditService.log({
+        userId: adminUser._id,
+        action: AUDIT_ACTIONS.USER_CREATED,
+        entityType: 'USER',
+        entityId: adminUser._id,
+        description: `Initial Administrator '${adminUser.name}' bootstrapped the system.`,
+        req,
+      });
+
+      const userObject = adminUser.toJSON();
+
+      return res.status(201).json({
+        success: true,
+        message: 'Initial administrator account created successfully.',
+        token,
+        user: userObject,
+        data: {
+          token,
+          user: userObject,
+        },
       });
     } catch (error) {
       next(error);
@@ -100,3 +208,4 @@ export const authController = {
 };
 
 export default authController;
+

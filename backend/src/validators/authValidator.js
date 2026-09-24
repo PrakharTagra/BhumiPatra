@@ -23,3 +23,19 @@ export const loginValidator = [
     .withMessage('Password is required'),
   validateRequest,
 ];
+
+export const setupValidator = [
+  body('name')
+    .trim()
+    .notEmpty()
+    .withMessage('Administrator name is required'),
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Valid administrator email address is required'),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
+  validateRequest,
+];
+

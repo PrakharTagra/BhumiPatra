@@ -109,5 +109,5 @@ documentSchema.index({ processingStatus: 1, createdAt: -1 });
 documentSchema.index({ verificationStatus: 1, createdAt: -1 });
 documentSchema.index({ uploadedBy: 1, createdAt: -1 });
 
-export const Document = mongoose.model('Document', documentSchema);
+export const Document = mongoose.model('Document', documentSchema, 'documents');
 export default Document;

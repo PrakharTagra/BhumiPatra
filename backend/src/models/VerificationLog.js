@@ -53,5 +53,5 @@ const verificationLogSchema = new mongoose.Schema(
 
 verificationLogSchema.index({ landRecordId: 1, createdAt: -1 });
 
-export const VerificationLog = mongoose.model('VerificationLog', verificationLogSchema);
+export const VerificationLog = mongoose.model('VerificationLog', verificationLogSchema, 'verification_logs');
 export default VerificationLog;

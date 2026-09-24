@@ -28,10 +28,11 @@ export const createUserValidator = [
 ];
 
 export const patchUserStatusValidator = [
-  body('isActive')
-    .notEmpty()
-    .withMessage('isActive boolean field is required')
-    .isBoolean()
-    .withMessage('isActive must be a boolean value'),
+  body().custom((value, { req }) => {
+    if (req.body.isActive === undefined && req.body.status === undefined) {
+      throw new Error('Either status ("ACTIVE" / "INACTIVE") or isActive boolean field is required.');
+    }
+    return true;
+  }),
   validateRequest,
 ];

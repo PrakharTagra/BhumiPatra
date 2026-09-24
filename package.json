@@ -1,0 +1,29 @@
+{
+  "name": "bhumipatra-monorepo",
+  "version": "1.0.0",
+  "description": "BhumiPatra - AI-Powered Intelligent Land Record Digitization & Validation System",
+  "private": true,
+  "scripts": {
+    "setup-admin": "npm --prefix backend run setup-admin",
+    "test:integration": "node backend/src/scripts/testWorkflow.js",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:admin": "npm --prefix admin-portal/frontend run dev",
+    "dev:verification": "npm --prefix verification-portal/frontend run dev",
+    "dev:digitization": "npm --prefix digitization-portal/frontend run dev",
+    "build:backend": "echo Backend does not require build",
+    "build:admin": "npm --prefix admin-portal/frontend run build",
+    "build:verification": "npm --prefix verification-portal/frontend run build",
+    "build:digitization": "npm --prefix digitization-portal/frontend run build",
+    "build:all": "npm run build:admin && npm run build:verification && npm run build:digitization"
+  },
+  "keywords": [
+    "bhumipatra",
+    "land-records",
+    "digitization",
+    "ai-ocr",
+    "verification-workstation",
+    "governance"
+  ],
+  "author": "BhumiPatra Engineering Team",
+  "license": "UNLICENSED"
+}

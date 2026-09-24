@@ -47,5 +47,5 @@ const auditLogSchema = new mongoose.Schema(
 
 auditLogSchema.index({ timestamp: -1, action: 1 });
 
-export const AuditLog = mongoose.model('AuditLog', auditLogSchema);
+export const AuditLog = mongoose.model('AuditLog', auditLogSchema, 'audit_logs');
 export default AuditLog;

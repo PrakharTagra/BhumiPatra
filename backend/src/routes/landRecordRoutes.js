@@ -18,6 +18,14 @@ router.get(
   landRecordController.getPending
 );
 
+// GET /api/land-records/dashboard (Verification Officer & Admin metrics)
+router.get(
+  '/dashboard',
+  authenticate,
+  authorizeRole(ROLES.VERIFICATION_OFFICER, ROLES.ADMIN),
+  landRecordController.getDashboard
+);
+
 // GET /api/land-records/:id (Inspect single land record)
 router.get('/:id', authenticate, landRecordController.getLandRecordById);
 

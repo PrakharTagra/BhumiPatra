@@ -10,6 +10,17 @@ import { sendSuccess, sendError } from '../utils/response.js';
 import { getPagination } from '../utils/pagination.js';
 import { ERROR_CODES, AUDIT_ACTIONS, PROCESSING_STATUS } from '../config/constants.js';
 
+function getAbsoluteFileUrl(req, fileUrl) {
+  if (!fileUrl) return '';
+  if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
+    return fileUrl;
+  }
+  const host = req ? req.get('host') : 'localhost:5000';
+  const protocol = req ? req.protocol : 'http';
+  const cleanPath = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`;
+  return `${protocol}://${host}${cleanPath}`;
+}
+
 export const documentController = {
   /**
    * Upload Scanned Land Record
@@ -70,7 +81,23 @@ export const documentController = {
         req,
       });
 
-      return sendSuccess(res, { document }, 201);
+      const absoluteUrl = getAbsoluteFileUrl(req, fileUrl);
+      const docObject = document.toObject();
+      docObject.fileUrl = absoluteUrl;
+
+      return res.status(201).json({
+        success: true,
+        document: docObject,
+        documentId: docObject.documentId,
+        id: docObject._id,
+        _id: docObject._id,
+        data: {
+          ...docObject,
+          document: docObject,
+          documentId: docObject.documentId,
+          id: docObject._id,
+        },
+      });
     } catch (error) {
       next(error);
     }
@@ -135,7 +162,22 @@ export const documentController = {
         Document.countDocuments(query),
       ]);
 
-      return sendSuccess(res, documents, 200, buildMeta(total));
+      const formatted = documents.map((d) => ({
+        ...d,
+        fileUrl: getAbsoluteFileUrl(req, d.fileUrl),
+      }));
+
+      const totalPages = Math.ceil(total / limit) || 1;
+      return res.status(200).json({
+        success: true,
+        documents: formatted,
+        total,
+        totalPages,
+        page,
+        limit,
+        pagination: buildMeta(total),
+        data: formatted,
+      });
     } catch (error) {
       next(error);
     }
@@ -169,8 +211,37 @@ export const documentController = {
         .sort({ createdAt: 1 })
         .lean();
 
+      const extractedData = landRecord
+        ? {
+            parcels: [
+              {
+                khasraNo: landRecord.landInformation?.khasraNo || '—',
+                khatauniNo: landRecord.landInformation?.khatauniNo || '—',
+                khewatNo: landRecord.landInformation?.khewatNo || '—',
+                area: landRecord.landInformation?.area || 0,
+                unit: landRecord.landInformation?.areaUnit || 'Acre',
+                landType: landRecord.landInformation?.landClassification || 'Agricultural',
+                confidence: landRecord.overallConfidence,
+              },
+            ],
+            owners:
+              landRecord.owner?.map((o) => ({
+                name: o.name || 'Recorded Tenure Holder',
+                relation: o.relation || 'Son/Daughter of',
+                share: o.shareRatio || '100%',
+                confidence: o.confidence || landRecord.overallConfidence,
+              })) || [],
+          }
+        : null;
+
+      const enrichedDoc = {
+        ...document,
+        fileUrl: getAbsoluteFileUrl(req, document.fileUrl),
+        extractedData,
+      };
+
       return sendSuccess(res, {
-        document,
+        document: enrichedDoc,
         landRecord,
         processingLogs,
       });
@@ -208,8 +279,11 @@ export const documentController = {
       // Execute pipeline
       const result = await pipelineService.runPipeline(document._id);
 
+      const docObj = result.document.toObject();
+      docObj.fileUrl = getAbsoluteFileUrl(req, docObj.fileUrl);
+
       return sendSuccess(res, {
-        document: result.document,
+        document: docObj,
         message: 'AI Processing pipeline finished successfully.',
       });
     } catch (error) {
@@ -239,12 +313,27 @@ export const documentController = {
 
       const lastLog = logs[logs.length - 1];
 
+      // Format steps dictionary for the 7-stage tracker
+      const stepDetails = {};
+      for (const log of logs) {
+        const key = log.stage?.toLowerCase();
+        if (key) {
+          stepDetails[key] = {
+            status: log.status,
+            duration: log.processingTime ? `${log.processingTime}ms` : undefined,
+            engine: log.engine,
+            error: log.error,
+          };
+        }
+      }
+
       return sendSuccess(res, {
         documentId: document.documentId,
         status: document.processingStatus,
         verificationStatus: document.verificationStatus,
         overallConfidence: document.overallConfidence,
         currentStep: lastLog?.stage || document.processingStatus,
+        steps: stepDetails,
         logs,
         error: document.metadata?.get ? document.metadata.get('failureReason') : document.metadata?.failureReason || null,
       });

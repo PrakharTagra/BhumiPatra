@@ -45,5 +45,5 @@ const processingLogSchema = new mongoose.Schema(
 
 processingLogSchema.index({ documentId: 1, createdAt: 1 });
 
-export const ProcessingLog = mongoose.model('ProcessingLog', processingLogSchema);
+export const ProcessingLog = mongoose.model('ProcessingLog', processingLogSchema, 'processing_logs');
 export default ProcessingLog;

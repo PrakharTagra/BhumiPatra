@@ -123,5 +123,5 @@ const landRecordSchema = new mongoose.Schema(
 landRecordSchema.index({ 'location.district': 1, 'location.tehsil': 1, 'location.village': 1 });
 landRecordSchema.index({ verificationStatus: 1, createdAt: -1 });
 
-export const LandRecord = mongoose.model('LandRecord', landRecordSchema);
+export const LandRecord = mongoose.model('LandRecord', landRecordSchema, 'land_records');
 export default LandRecord;

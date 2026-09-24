@@ -15,7 +15,15 @@ router.post(
   authenticate,
   authorizeRole(ROLES.DIGITIZATION_OPERATOR, ROLES.ADMIN),
   uploadLimiter,
-  upload.single('file'),
+  (req, res, next) => {
+    upload.fields([{ name: 'file', maxCount: 1 }, { name: 'document', maxCount: 1 }])(req, res, (err) => {
+      if (err) return next(err);
+      if (req.files) {
+        req.file = req.files['file']?.[0] || req.files['document']?.[0];
+      }
+      next();
+    });
+  },
   uploadDocumentValidator,
   documentController.upload
 );

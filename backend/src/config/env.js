@@ -11,7 +11,14 @@ export const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   CLIENT_ORIGINS: process.env.CLIENT_ORIGINS
     ? process.env.CLIENT_ORIGINS.split(',').map((origin) => origin.trim())
-    : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'],
+    : [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+      ],
   UPLOAD_DIR: process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
   OCR_PROVIDER: process.env.OCR_PROVIDER || null,
   AI_PROVIDER: process.env.AI_PROVIDER || null,
