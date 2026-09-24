@@ -23,6 +23,8 @@ export const env = {
   OCR_PROVIDER: process.env.OCR_PROVIDER || null,
   AI_PROVIDER: process.env.AI_PROVIDER || null,
   MAX_FILE_SIZE_MB: 50,
+  DOCUMENT_ANALYSIS_ENGINE_URL: process.env.DOCUMENT_ANALYSIS_ENGINE_URL || 'http://localhost:8000',
+  INTERNAL_API_KEY: process.env.INTERNAL_API_KEY || 'bhumipatra_internal_secret_key_2026',
 };
 
 export default env;

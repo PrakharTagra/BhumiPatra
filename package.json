@@ -6,6 +6,8 @@
   "scripts": {
     "setup-admin": "npm --prefix backend run setup-admin",
     "test:integration": "node backend/src/scripts/testWorkflow.js",
+    "test:engine": "python -m pytest document-analysis-engine/tests/ -v",
+    "dev:engine": "python -m uvicorn app.main:app --app-dir document-analysis-engine --host 0.0.0.0 --port 8000 --reload",
     "dev:backend": "npm --prefix backend run dev",
     "dev:admin": "npm --prefix admin-portal/frontend run dev",
     "dev:verification": "npm --prefix verification-portal/frontend run dev",

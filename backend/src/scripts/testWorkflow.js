@@ -123,13 +123,32 @@ async function runTest() {
 
   // 9. Operator uploads a document
   console.log('\n[9] Operator Uploading Land Record Document...');
-  const testFilePath = path.resolve('test_land_record.pdf');
-  fs.writeFileSync(testFilePath, '%PDF-1.4\n%BhumiPatra Sample Khatauni Scan Record\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF');
+  let fileBytes;
+  let filename = 'Khatauni_Parcel_142.png';
+  let mimeType = 'image/png';
+  const imgPath = path.resolve('document-analysis-engine/test_scanned_khatauni.png');
+  const pdfPath = path.resolve('test_valid_land_record.pdf');
 
-  const fileBytes = fs.readFileSync(testFilePath);
-  const blob = new Blob([fileBytes], { type: 'application/pdf' });
+  if (fs.existsSync(imgPath)) {
+    fileBytes = fs.readFileSync(imgPath);
+    filename = 'Khatauni_Parcel_142.png';
+    mimeType = 'image/png';
+  } else if (fs.existsSync(pdfPath)) {
+    fileBytes = fs.readFileSync(pdfPath);
+    filename = 'Khatauni_Parcel_142_BKT.pdf';
+    mimeType = 'application/pdf';
+  } else {
+    // Generate valid sample PDF buffer conforming to PDF-1.4 specifications
+    fileBytes = Buffer.from(
+      '%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 55 >>\nstream\nBT /F1 12 Tf 100 700 Td (Khasra 101 Khata 45 Area 1.5) Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000206 00000 n \ntrailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n312\n%%EOF\n'
+    );
+    filename = 'Khatauni_Parcel_142_BKT.pdf';
+    mimeType = 'application/pdf';
+  }
+
+  const blob = new Blob([fileBytes], { type: mimeType });
   const formData = new FormData();
-  formData.append('file', blob, 'Khatauni_Parcel_142_BKT.pdf');
+  formData.append('file', blob, filename);
   formData.append('documentType', 'KHATAUNI');
   formData.append('state', 'Uttar Pradesh');
   formData.append('district', 'Lucknow');
@@ -225,8 +244,8 @@ async function runTest() {
   console.log(`Audit Logs retrieved: ${logs.length}`);
   logs.slice(0, 3).forEach((l) => console.log(` - [${l.action}] ${l.description}`));
 
-  // Clean up test file
-  if (fs.existsSync(testFilePath)) fs.unlinkSync(testFilePath);
+  // Clean up generated test file if any
+  if (fs.existsSync(pdfPath)) fs.unlinkSync(pdfPath);
 
   console.log('\n=== ALL BHUMIPATRA INTEGRATION TESTS PASSED SUCCESSFULLY! ===');
 }
