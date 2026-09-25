@@ -145,59 +145,43 @@ export function DashboardPage() {
         />
       )}
 
-      {/* 5 Strictly API-Driven Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {loading ? (
-          <>
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-          </>
-        ) : (
-          <>
-            {/* 1. Total Uploaded Documents */}
-            <StatCard
-              title="Total Uploaded"
-              value={stats.total}
-              icon={Files}
-              variant="primary"
-            />
-
-            {/* 2. Processing Documents */}
-            <StatCard
-              title="Processing"
-              value={stats.processing}
-              icon={Cpu}
-              variant="processing"
-            />
-
-            {/* 3. Processed Documents */}
-            <StatCard
-              title="Processed"
-              value={stats.processed}
-              icon={CheckCircle2}
-              variant="success"
-            />
-
-            {/* 4. Requiring Verification */}
-            <StatCard
-              title="Needs Verification"
-              value={stats.needsVerification}
-              icon={AlertTriangle}
-              variant="warning"
-            />
-
-            {/* 5. Failed Documents */}
-            <StatCard
-              title="Failed"
-              value={stats.failed}
-              icon={XCircle}
-              variant="danger"
-            />
-          </>
-        )}
+      {/* Official Compact Document Summary Ribbon */}
+      <div className="bg-white border border-slate-300 rounded divide-y sm:divide-y-0 sm:divide-x divide-slate-200 grid grid-cols-2 sm:grid-cols-5 text-center text-xs">
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Total Uploaded</div>
+          <div className="text-lg font-bold text-slate-900 mt-0.5 font-mono">
+            {loading ? '—' : stats.total}
+          </div>
+          <div className="text-[10px] text-slate-400">Total batch documents</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Processing</div>
+          <div className="text-lg font-bold text-blue-900 mt-0.5 font-mono">
+            {loading ? '—' : stats.processing}
+          </div>
+          <div className="text-[10px] text-slate-400">OCR & extraction active</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Processed</div>
+          <div className="text-lg font-bold text-emerald-800 mt-0.5 font-mono">
+            {loading ? '—' : stats.processed}
+          </div>
+          <div className="text-[10px] text-slate-400">Extraction completed</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Needs Verification</div>
+          <div className="text-lg font-bold text-amber-800 mt-0.5 font-mono">
+            {loading ? '—' : stats.needsVerification}
+          </div>
+          <div className="text-[10px] text-slate-400">Sent to Officer desk</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Failed</div>
+          <div className="text-lg font-bold text-rose-800 mt-0.5 font-mono">
+            {loading ? '—' : stats.failed}
+          </div>
+          <div className="text-[10px] text-slate-400">Corrupted or unreadable</div>
+        </div>
       </div>
 
       {/* Recent Uploads Section */}

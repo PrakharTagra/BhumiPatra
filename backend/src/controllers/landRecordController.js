@@ -43,6 +43,49 @@ function normalizeLandRecord(record, req) {
   const landInfo = plain.landInformation || {};
   const loc = plain.location || {};
 
+  const landholders = Array.isArray(plain.landholders) && plain.landholders.length > 0
+    ? plain.landholders
+    : (plain.owner || []).map((o, idx) => ({
+        srNo: idx + 1,
+        name: o.name || 'Not detected',
+        fatherGuardianName: o.relativeName || '',
+        ownershipType: plain.ownership?.tenureType || 'Bhumidhar',
+        share: o.shareRatio || (plain.owner.length > 1 ? `1/${plain.owner.length}` : '1/1'),
+      }));
+
+  const landParcels = Array.isArray(plain.landParcels) && plain.landParcels.length > 0
+    ? plain.landParcels
+    : (landInfo.khasraNo && landInfo.khasraNo !== 'Not detected' ? [{
+        srNo: 1,
+        khasraNumber: landInfo.khasraNo,
+        khataNumber: landInfo.khatauniNo || 'Not detected',
+        ownerName: ownerFirst?.name || 'Not detected',
+        area: landInfo.area,
+        areaUnit: landInfo.areaUnit || 'Hectare',
+        classification: landInfo.landClassification || 'Agricultural',
+        landUse: landInfo.landUse || 'Cultivable',
+      }] : []);
+
+  const mutations = Array.isArray(plain.mutations) && plain.mutations.length > 0
+    ? plain.mutations
+    : (plain.mutation?.mutationNo ? [{
+        srNo: 1,
+        mutationNo: plain.mutation.mutationNo,
+        mutationDate: plain.mutation.remarks ? plain.mutation.remarks.replace(/^Date:\s*/, '') : 'N/A',
+        orderAuthority: 'Tehsildar',
+        status: 'Recorded',
+      }] : []);
+
+  const registrations = Array.isArray(plain.registrations) && plain.registrations.length > 0
+    ? plain.registrations
+    : (plain.registration?.registrationNo ? [{
+        srNo: 1,
+        registrationNo: plain.registration.registrationNo,
+        registrationDate: plain.registration.remarks ? plain.registration.remarks.replace(/^Date:\s*/, '') : 'N/A',
+        subRegistrarOffice: loc.tehsil || 'Sub-Registrar Office',
+        status: 'Registered',
+      }] : []);
+
   return {
     ...plain,
     id: plain._id,
@@ -51,22 +94,27 @@ function normalizeLandRecord(record, req) {
     documentUrl: fullFileUrl,
     fileUrl: fullFileUrl,
     documentType: doc.documentType || 'Scanned Land Record',
-    ownerName: ownerFirst?.name || '',
-    relativeName: ownerFirst?.relativeName || '',
-    khasraNumber: landInfo.khasraNo || '',
-    khataNumber: landInfo.khatauniNo || '',
-    surveyNumber: landInfo.khewatNo || '',
-    plotNumber: landInfo.khewatNo || '',
-    area: landInfo.area !== undefined && landInfo.area !== null ? landInfo.area : null,
-    areaUnit: landInfo.areaUnit || '',
-    landClassification: landInfo.landClassification || '',
+    ownerName: landholders[0]?.name || ownerFirst?.name || '',
+    relativeName: landholders[0]?.fatherGuardianName || ownerFirst?.relativeName || '',
+    fatherGuardianName: landholders[0]?.fatherGuardianName || ownerFirst?.relativeName || '',
+    khasraNumber: landParcels[0]?.khasraNumber || landInfo.khasraNo || '',
+    khataNumber: landParcels[0]?.khataNumber || landInfo.khatauniNo || '',
+    surveyNumber: landInfo.surveyNo || (landInfo.khewatNo && landInfo.khewatNo !== 'Not detected' && landInfo.khewatNo !== landInfo.khasraNo ? landInfo.khewatNo : ''),
+    plotNumber: landInfo.plotNo || '',
+    area: landParcels[0]?.area ?? (landInfo.area !== undefined && landInfo.area !== null ? landInfo.area : null),
+    areaUnit: landParcels[0]?.areaUnit || landInfo.areaUnit || '',
+    landClassification: landParcels[0]?.classification || landInfo.landClassification || '',
     state: loc.state || doc.state || '',
     district: loc.district || doc.district || '',
     tehsil: loc.tehsil || doc.tehsil || '',
     village: loc.village || doc.village || '',
-    ownershipDetails: plain.ownership?.tenureType || '',
-    mutationDetails: plain.mutation?.mutationNo ? (plain.mutation.remarks ? `Mutation No: ${plain.mutation.mutationNo} (${plain.mutation.remarks})` : `Mutation No: ${plain.mutation.mutationNo}`) : '',
-    registrationDetails: plain.registration?.registrationNo ? (plain.registration.remarks ? `Reg No: ${plain.registration.registrationNo} (${plain.registration.remarks})` : `Reg No: ${plain.registration.registrationNo}`) : '',
+    ownershipDetails: landholders[0]?.ownershipType || plain.ownership?.tenureType || '',
+    mutationDetails: mutations[0]?.mutationNo ? `Mutation No: ${mutations[0].mutationNo} (${mutations[0].mutationDate || 'N/A'})` : '',
+    registrationDetails: registrations[0]?.registrationNo ? `Reg No: ${registrations[0].registrationNo} (${registrations[0].registrationDate || 'N/A'})` : '',
+    landholders,
+    landParcels,
+    mutations,
+    registrations,
     confidence: plain.overallConfidence,
     confidenceScore: plain.overallConfidence,
     reviewStatus: plain.verificationStatus,
@@ -322,7 +370,23 @@ export const landRecordController = {
   async updateLandRecord(req, res, next) {
     try {
       const { id } = req.params;
-      const { field, value, previousValue, reason, remarks, owner, landInformation, location, ownership, mutation, registration } = req.body;
+      const {
+        field,
+        value,
+        previousValue,
+        reason,
+        remarks,
+        owner,
+        landInformation,
+        location,
+        ownership,
+        mutation,
+        registration,
+        landholders,
+        landParcels,
+        mutations,
+        registrations,
+      } = req.body;
 
       const actionReason = reason || remarks || 'Field correction by Verification Officer';
 
@@ -349,11 +413,15 @@ export const landRecordController = {
             break;
 
           case 'relativeName':
+          case 'fatherGuardianName':
             if (!record.owner || record.owner.length === 0) {
               record.owner = [{ relativeName: value }];
             } else {
               oldValue = oldValue ?? record.owner[0].relativeName;
               record.owner[0].relativeName = value;
+            }
+            if (Array.isArray(record.landholders) && record.landholders.length > 0) {
+              record.landholders[0].fatherGuardianName = value;
             }
             break;
 
@@ -474,6 +542,40 @@ export const landRecordController = {
       if (registration) {
         loggedChanges.push({ field: 'registration', oldValue: record.registration, newValue: registration });
         record.registration = { ...(record.registration?.toObject() || {}), ...registration };
+      }
+      if (landholders && Array.isArray(landholders)) {
+        loggedChanges.push({ field: 'landholders', oldValue: record.landholders, newValue: landholders });
+        record.landholders = landholders;
+        record.owner = landholders.map((lh) => ({
+          name: lh.name,
+          relativeName: lh.fatherGuardianName || '',
+          shareRatio: lh.share || '',
+          confidence: 95,
+        }));
+      }
+      if (landParcels && Array.isArray(landParcels)) {
+        loggedChanges.push({ field: 'landParcels', oldValue: record.landParcels, newValue: landParcels });
+        record.landParcels = landParcels;
+        if (landParcels.length > 0) {
+          const p0 = landParcels[0];
+          record.landInformation = {
+            ...(record.landInformation?.toObject() || {}),
+            khasraNo: p0.khasraNumber || record.landInformation?.khasraNo,
+            khatauniNo: p0.khataNumber || record.landInformation?.khatauniNo,
+            area: p0.area != null ? Number(p0.area) : record.landInformation?.area,
+            areaUnit: p0.areaUnit || record.landInformation?.areaUnit,
+            landClassification: p0.classification || record.landInformation?.landClassification,
+            landUse: p0.landUse || record.landInformation?.landUse,
+          };
+        }
+      }
+      if (mutations && Array.isArray(mutations)) {
+        loggedChanges.push({ field: 'mutations', oldValue: record.mutations, newValue: mutations });
+        record.mutations = mutations;
+      }
+      if (registrations && Array.isArray(registrations)) {
+        loggedChanges.push({ field: 'registrations', oldValue: record.registrations, newValue: registrations });
+        record.registrations = registrations;
       }
 
       // Persist logs for all modified fields in VerificationLog

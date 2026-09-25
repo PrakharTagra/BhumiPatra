@@ -1,27 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import verificationApi from '../api/verificationApi';
-import StatCard from '../components/common/StatCard';
-import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import EmptyState from '../components/common/EmptyState';
 import ErrorAlert from '../components/common/ErrorAlert';
 import {
   Inbox,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  FileCheck,
   RefreshCw,
   ArrowRight,
   Eye,
+  CheckCircle2,
   FileText,
-  Clock,
 } from 'lucide-react';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
+  const [pendingQueue, setPendingQueue] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -29,8 +24,14 @@ export default function Dashboard() {
     setLoading(true);
     setError(null);
     try {
-      const response = await verificationApi.getDashboardMetrics();
-      setData(response?.data || response || {});
+      const [metricsRes, pendingRes] = await Promise.all([
+        verificationApi.getDashboardMetrics(),
+        verificationApi.getPendingRecords({ limit: 5 }).catch(() => ({ records: [] })),
+      ]);
+
+      setData(metricsRes?.data || metricsRes || {});
+      const pList = pendingRes?.records || pendingRes?.data || (Array.isArray(pendingRes) ? pendingRes : []);
+      setPendingQueue(pList);
     } catch (err) {
       setError(err.customMessage || 'Failed to fetch verification metrics.');
     } finally {
@@ -42,35 +43,32 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // Real API numbers only - never invent values
-  const pendingCount = data?.pendingVerification ?? data?.pendingCount ?? data?.pending;
-  const highConfidenceCount = data?.highConfidenceRecords ?? data?.highConfidenceCount ?? data?.highConfidence;
-  const lowConfidenceCount = data?.lowConfidenceRecords ?? data?.lowConfidenceCount ?? data?.lowConfidence;
-  const approvedCount = data?.approvedRecords ?? data?.approvedCount ?? data?.approved;
-  const rejectedCount = data?.rejectedRecords ?? data?.rejectedCount ?? data?.rejected;
+  const pendingCount = data?.pendingVerification ?? data?.pendingCount ?? data?.pending ?? 0;
+  const highConfidenceCount = data?.highConfidenceRecords ?? data?.highConfidenceCount ?? data?.highConfidence ?? 0;
+  const lowConfidenceCount = data?.lowConfidenceRecords ?? data?.lowConfidenceCount ?? data?.lowConfidence ?? 0;
+  const approvedCount = data?.approvedRecords ?? data?.approvedCount ?? data?.approved ?? 0;
+  const rejectedCount = data?.rejectedRecords ?? data?.rejectedCount ?? data?.rejected ?? 0;
 
   const recentRecords = Array.isArray(data?.recentlyReviewed || data?.recentRecords)
     ? data.recentlyReviewed || data.recentRecords
     : [];
 
-  const isEmpty =
-    (pendingCount === 0 || pendingCount === undefined) &&
-    (approvedCount === 0 || approvedCount === undefined) &&
-    recentRecords.length === 0;
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Dashboard
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+            Verification Desk Overview
           </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Land title cadastre verification and revenue record approval queue
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="secondary"
-            size="sm"
+            size="xs"
             icon={RefreshCw}
             loading={loading}
             onClick={fetchDashboardData}
@@ -78,8 +76,8 @@ export default function Dashboard() {
             Refresh
           </Button>
           <Link to="/queue">
-            <Button variant="primary" size="sm" icon={Inbox}>
-              Open Verification Queue
+            <Button variant="primary" size="xs" icon={Inbox}>
+              Open Verification Queue ({pendingCount})
             </Button>
           </Link>
         </div>
@@ -93,122 +91,170 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Main Metric Cards Grid */}
-      <div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard
-            title="Pending Verification"
-            value={pendingCount}
-            icon={Inbox}
-            variant="navy"
-            loading={loading}
-          />
-          <StatCard
-            title="High-Confidence"
-            value={highConfidenceCount}
-            icon={FileCheck}
-            variant="success"
-            loading={loading}
-          />
-          <StatCard
-            title="Low-Confidence"
-            value={lowConfidenceCount}
-            icon={AlertTriangle}
-            variant="warning"
-            loading={loading}
-          />
-          <StatCard
-            title="Approved Records"
-            value={approvedCount}
-            icon={CheckCircle2}
-            variant="success"
-            loading={loading}
-          />
-          <StatCard
-            title="Rejected Records"
-            value={rejectedCount}
-            icon={XCircle}
-            variant="danger"
-            loading={loading}
-          />
+      {/* Operational Summary Row (Administrative, Dense, No Giant SaaS Cards) */}
+      <div className="bg-white border border-slate-300 rounded divide-y sm:divide-y-0 sm:divide-x divide-slate-200 grid grid-cols-2 sm:grid-cols-5 text-center text-xs">
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Pending Queue</div>
+          <div className="text-lg font-bold text-slate-900 mt-0.5 font-mono">
+            {loading ? '—' : pendingCount}
+          </div>
+          <div className="text-[10px] text-slate-400">Awaiting verification</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">High Match</div>
+          <div className="text-lg font-bold text-emerald-800 mt-0.5 font-mono">
+            {loading ? '—' : highConfidenceCount}
+          </div>
+          <div className="text-[10px] text-slate-400">Score &ge; 80%</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Review Flags</div>
+          <div className="text-lg font-bold text-amber-800 mt-0.5 font-mono">
+            {loading ? '—' : lowConfidenceCount}
+          </div>
+          <div className="text-[10px] text-slate-400">Field discrepancies</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Approved</div>
+          <div className="text-lg font-bold text-blue-900 mt-0.5 font-mono">
+            {loading ? '—' : approvedCount}
+          </div>
+          <div className="text-[10px] text-slate-400">Signed & certified</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Rejected</div>
+          <div className="text-lg font-bold text-rose-800 mt-0.5 font-mono">
+            {loading ? '—' : rejectedCount}
+          </div>
+          <div className="text-[10px] text-slate-400">Returned or rejected</div>
         </div>
       </div>
 
-      {/* Zero State if no data recorded in database */}
-      {!loading && !error && isEmpty && (
-        <EmptyState
-          type="queue"
-          title="Verification Desk Empty"
-          message="There are currently no land records assigned or queued for verification in the database."
-          action={
-            <Link to="/queue">
-              <Button variant="secondary" size="xs" icon={Inbox}>
-                Check Queue
-              </Button>
-            </Link>
-          }
-        />
-      )}
+      {/* Table 1: Pending Verification Queue */}
+      <div className="bg-white border border-slate-300 rounded">
+        <div className="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
+          <div className="flex items-center gap-2">
+            <Inbox className="w-4 h-4 text-slate-600" />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+              Pending Verification Queue
+            </h2>
+          </div>
+          <Link
+            to="/queue"
+            className="text-xs text-blue-700 hover:text-blue-900 font-semibold flex items-center gap-1"
+          >
+            View All ({pendingCount}) <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
 
-      {/* Recently Reviewed Records Table */}
-      <Card
-        title="Recently Reviewed Records"
-        subtitle=""
-        actions={
+        {loading ? (
+          <div className="p-6 text-center text-xs text-slate-500">Loading pending verification queue...</div>
+        ) : pendingQueue.length === 0 ? (
+          <div className="p-6 text-center text-xs text-slate-500">
+            No records currently pending verification in queue.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs divide-y divide-slate-200">
+              <thead className="bg-slate-50 text-slate-600 font-semibold">
+                <tr>
+                  <th className="py-2 px-3">Record / Document ID</th>
+                  <th className="py-2 px-3">Primary Owner</th>
+                  <th className="py-2 px-3">Khasra / Plot</th>
+                  <th className="py-2 px-3">Revenue Jurisdiction</th>
+                  <th className="py-2 px-3">Status</th>
+                  <th className="py-2 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {pendingQueue.slice(0, 5).map((rec) => {
+                  const id = rec._id || rec.id;
+                  return (
+                    <tr key={id} className="hover:bg-slate-50/60">
+                      <td className="py-2 px-3 font-mono font-medium text-slate-900">
+                        {rec.documentNumber || `REC-${String(id).slice(0, 8)}`}
+                      </td>
+                      <td className="py-2 px-3 font-medium text-slate-800">
+                        {rec.ownerName || '—'}
+                      </td>
+                      <td className="py-2 px-3 text-slate-700 font-mono">
+                        {rec.khasraNumber || '—'}
+                      </td>
+                      <td className="py-2 px-3 text-slate-600">
+                        {rec.district ? `${rec.district} • ${rec.tehsil || '—'}` : '—'}
+                      </td>
+                      <td className="py-2 px-3">
+                        <Badge status={rec.reviewStatus || rec.verificationStatus || 'PENDING'} size="xs" />
+                      </td>
+                      <td className="py-2 px-3 text-right">
+                        <Link to={`/verify/${id}`}>
+                          <Button variant="primary" size="xs">
+                            Verify Record
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Table 2: Recently Reviewed Records */}
+      <div className="bg-white border border-slate-300 rounded">
+        <div className="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-slate-600" />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+              Recently Reviewed Records
+            </h2>
+          </div>
           <Link
             to="/history"
             className="text-xs text-blue-700 hover:text-blue-900 font-semibold flex items-center gap-1"
           >
-            Full History <ArrowRight className="w-3.5 h-3.5" />
+            Verification History <ArrowRight className="w-3.5 h-3.5" />
           </Link>
-        }
-        bodyClassName="p-0"
-      >
+        </div>
+
         {loading ? (
-          <div className="p-8 text-center text-xs text-slate-500">Loading recently reviewed records...</div>
+          <div className="p-6 text-center text-xs text-slate-500">Loading reviewed records...</div>
         ) : recentRecords.length === 0 ? (
-          <div className="p-8">
-            <EmptyState
-              type="records"
-              title="No recently reviewed records"
-              message="You have not reviewed any land records in this session yet."
-            />
+          <div className="p-6 text-center text-xs text-slate-500">
+            No recently verified records in this session yet.
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs divide-y divide-slate-200">
+              <thead className="bg-slate-50 text-slate-600 font-semibold">
                 <tr>
-                  <th className="py-2.5 px-4 font-semibold">Document / Parcel ID</th>
-                  <th className="py-2.5 px-4 font-semibold">Owner / Claimant</th>
-                  <th className="py-2.5 px-4 font-semibold">District / Tehsil</th>
-                  <th className="py-2.5 px-4 font-semibold">Confidence</th>
-                  <th className="py-2.5 px-4 font-semibold">Review Status</th>
-                  <th className="py-2.5 px-4 font-semibold text-right">Action</th>
+                  <th className="py-2 px-3">Record / Document ID</th>
+                  <th className="py-2 px-3">Primary Owner</th>
+                  <th className="py-2 px-3">Revenue Jurisdiction</th>
+                  <th className="py-2 px-3">Review Status</th>
+                  <th className="py-2 px-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {recentRecords.map((rec, idx) => {
+                {recentRecords.slice(0, 5).map((rec, idx) => {
                   const id = rec._id || rec.id || idx;
-                  const conf = rec.confidence ?? rec.confidenceScore;
                   return (
-                    <tr key={id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 font-mono font-medium text-navy-950">
-                        {rec.documentNumber || rec.title || id}
+                    <tr key={id} className="hover:bg-slate-50/60">
+                      <td className="py-2 px-3 font-mono font-medium text-slate-900">
+                        {rec.documentNumber || `REC-${String(id).slice(0, 8)}`}
                       </td>
-                      <td className="py-3 px-4 text-slate-800 font-medium">
+                      <td className="py-2 px-3 font-medium text-slate-800">
                         {rec.ownerName || rec.owner || '—'}
                       </td>
-                      <td className="py-3 px-4 text-slate-600">
-                        {rec.district ? `${rec.district}${rec.tehsil ? `, ${rec.tehsil}` : ''}` : '—'}
+                      <td className="py-2 px-3 text-slate-600">
+                        {rec.district ? `${rec.district}${rec.tehsil ? ` • ${rec.tehsil}` : ''}` : '—'}
                       </td>
-                      <td className="py-3 px-4 font-mono font-semibold">
-                        {conf !== undefined ? `${Number(conf).toFixed(0)}%` : '—'}
+                      <td className="py-2 px-3">
+                        <Badge status={rec.reviewStatus || rec.verificationStatus || 'VERIFIED'} size="xs" />
                       </td>
-                      <td className="py-3 px-4">
-                        <Badge status={rec.reviewStatus || rec.verificationStatus || 'VERIFIED'} size="sm" />
-                      </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-2 px-3 text-right">
                         <Link to={`/verify/${id}`}>
                           <Button variant="secondary" size="xs" icon={Eye}>
                             Inspect
@@ -222,7 +268,7 @@ export default function Dashboard() {
             </table>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

@@ -1,26 +1,39 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import adminApi from '../api/adminApi';
-import StatCard from '../components/common/StatCard';
-import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import EmptyState from '../components/common/EmptyState';
 import ErrorAlert from '../components/common/ErrorAlert';
 import {
   FileText,
-  FileCheck2,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Target,
   RefreshCw,
   ArrowRight,
-  TrendingUp,
-  ShieldCheck,
+  Activity,
   Users,
+  Eye,
+  ScrollText,
 } from 'lucide-react';
+
+function formatActivityAction(action) {
+  if (!action) return 'Activity logged';
+  const mapping = {
+    DOCUMENT_UPLOAD: 'Document uploaded',
+    DOCUMENT_PROCESS_TRIGGERED: 'Document processing started',
+    DOCUMENT_PROCESSED: 'Document processing completed',
+    DOCUMENT_PROCESSING_FAILED: 'Document processing failed',
+    LAND_RECORD_CREATED: 'Land record created',
+    LAND_RECORD_UPDATED: 'Land record updated',
+    LAND_RECORD_VERIFIED: 'Land record verified and approved',
+    LAND_RECORD_REJECTED: 'Land record rejected',
+    LAND_RECORD_SENT_BACK: 'Land record returned for correction',
+    USER_LOGIN: 'User logged in',
+    USER_LOGOUT: 'User logged out',
+    USER_CREATED: 'New user created',
+    USER_UPDATED: 'User account updated',
+  };
+  return mapping[action] || action.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -32,7 +45,6 @@ export default function Dashboard() {
     setError(null);
     try {
       const response = await adminApi.getDashboard();
-      // Handle response or response.data structure safely
       setData(response?.data || response || {});
     } catch (err) {
       setError(err.customMessage || 'Failed to fetch dashboard metrics.');
@@ -45,40 +57,36 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // Extract strict API fields without inventing any values
-  const totalDocuments = data?.totalDocuments ?? data?.total;
-  const processedDocuments = data?.processedDocuments ?? data?.processed;
-  const pendingProcessing = data?.pendingProcessing ?? data?.pending;
-  const pendingVerification = data?.pendingVerification ?? data?.unverified;
-  const verifiedRecords = data?.verifiedRecords ?? data?.verified;
-  const rejectedRecords = data?.rejectedRecords ?? data?.rejected;
-  const failedDocuments = data?.failedDocuments ?? data?.failed;
-  const accuracyRate = data?.accuracyRate !== undefined
-    ? `${Number(data.accuracyRate).toFixed(1)}%`
-    : data?.averageConfidence !== undefined
-    ? `${Number(data.averageConfidence).toFixed(1)}%`
-    : null;
+  const totalDocuments = data?.totalDocuments ?? data?.total ?? 0;
+  const processingDocuments = (data?.pendingProcessing ?? data?.pending ?? 0) + (data?.processing ?? 0);
+  const pendingVerification = data?.pendingVerification ?? data?.unverified ?? 0;
+  const verifiedRecords = data?.verifiedRecords ?? data?.verified ?? 0;
+  const rejectedRecords = data?.rejectedRecords ?? data?.rejected ?? 0;
+  const failedDocuments = data?.failedDocuments ?? data?.failed ?? 0;
 
   const recentDocuments = Array.isArray(data?.recentDocuments) ? data.recentDocuments : [];
   const recentActivities = Array.isArray(data?.recentActivities || data?.recentActivity)
     ? data.recentActivities || data.recentActivity
     : [];
 
-  const hasZeroTotal = totalDocuments === 0 || (totalDocuments === undefined && !loading && !error);
+  const hasZeroTotal = totalDocuments === 0 && !loading && !error;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Top Banner / Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-navy-950">
-            Dashboard
+          <h1 className="text-lg font-bold tracking-tight text-slate-900">
+            System Administration Dashboard
           </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Overview of cadastral digitization repository, operational queues, and administrative activity
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="secondary"
-            size="sm"
+            size="xs"
             icon={RefreshCw}
             loading={loading}
             onClick={fetchDashboardData}
@@ -86,8 +94,8 @@ export default function Dashboard() {
             Refresh
           </Button>
           <Link to="/documents">
-            <Button variant="primary" size="sm" icon={FileText}>
-              Document Queue
+            <Button variant="primary" size="xs" icon={FileText}>
+              Document Monitoring
             </Button>
           </Link>
         </div>
@@ -102,240 +110,188 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Primary Metrics Grid */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Processing Metrics
-          </h2>
+      {/* Compact Official Document Summary Ribbon (No Giant SaaS Cards, No Fake Accuracy) */}
+      <div className="bg-white border border-slate-300 rounded divide-y sm:divide-y-0 sm:divide-x divide-slate-200 grid grid-cols-2 sm:grid-cols-6 text-center text-xs">
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Total Documents</div>
+          <div className="text-lg font-bold text-slate-900 mt-0.5 font-mono">
+            {loading ? '—' : totalDocuments}
+          </div>
+          <div className="text-[10px] text-slate-400">All uploaded records</div>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Total Documents"
-            value={totalDocuments}
-            icon={FileText}
-            variant="primary"
-            loading={loading}
-          />
-          <StatCard
-            title="Processed Documents"
-            value={processedDocuments}
-            icon={FileCheck2}
-            variant="info"
-            loading={loading}
-          />
-          <StatCard
-            title="Pending Processing"
-            value={pendingProcessing}
-            icon={Clock}
-            variant="warning"
-            loading={loading}
-          />
-          <StatCard
-            title="Pending Verification"
-            value={pendingVerification}
-            icon={AlertTriangle}
-            variant="warning"
-            loading={loading}
-          />
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Processing</div>
+          <div className="text-lg font-bold text-blue-900 mt-0.5 font-mono">
+            {loading ? '—' : processingDocuments}
+          </div>
+          <div className="text-[10px] text-slate-400">In OCR / extraction</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Pending Verification</div>
+          <div className="text-lg font-bold text-amber-800 mt-0.5 font-mono">
+            {loading ? '—' : pendingVerification}
+          </div>
+          <div className="text-[10px] text-slate-400">Awaiting officer review</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Verified</div>
+          <div className="text-lg font-bold text-emerald-800 mt-0.5 font-mono">
+            {loading ? '—' : verifiedRecords}
+          </div>
+          <div className="text-[10px] text-slate-400">Certified & approved</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Rejected</div>
+          <div className="text-lg font-bold text-rose-800 mt-0.5 font-mono">
+            {loading ? '—' : rejectedRecords}
+          </div>
+          <div className="text-[10px] text-slate-400">Returned or rejected</div>
+        </div>
+        <div className="p-3">
+          <div className="text-slate-500 font-medium">Failed</div>
+          <div className="text-lg font-bold text-slate-700 mt-0.5 font-mono">
+            {loading ? '—' : failedDocuments}
+          </div>
+          <div className="text-[10px] text-slate-400">Extraction failure</div>
         </div>
       </div>
 
-      {/* Secondary Metrics: Verification & System Accuracy */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Verified Records"
-          value={verifiedRecords}
-          icon={CheckCircle}
-          variant="success"
-          loading={loading}
-        />
-        <StatCard
-          title="Rejected Records"
-          value={rejectedRecords}
-          icon={XCircle}
-          variant="danger"
-          loading={loading}
-        />
-        <StatCard
-          title="Failed Documents"
-          value={failedDocuments}
-          icon={AlertTriangle}
-          variant="danger"
-          loading={loading}
-        />
-        <StatCard
-          title="Accuracy"
-          value={accuracyRate}
-          icon={Target}
-          variant="default"
-          formatValue={false}
-          loading={loading}
-        />
-      </div>
-
-      {/* Zero State Notice */}
+      {/* Empty State Notice */}
       {!loading && !error && hasZeroTotal && (
         <EmptyState
           type="documents"
           title="Database Currently Empty"
-          message="No documents or operations have been recorded in the BhumiPatra database yet. When records are uploaded and processed, live metrics will appear here."
+          message="No documents or operations have been recorded in the BhumiPatra database yet."
           action={
-            <div className="flex gap-2">
-              <Link to="/users">
-                <Button variant="secondary" size="xs" icon={Users}>
-                  Manage Operators
-                </Button>
-              </Link>
-            </div>
+            <Link to="/users">
+              <Button variant="secondary" size="xs" icon={Users}>
+                Manage Operators
+              </Button>
+            </Link>
           }
         />
       )}
 
-      {/* Recent Tables & Status breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Documents */}
-        <Card
-          title="Recent Documents"
-          actions={
-            <Link to="/documents" className="text-xs text-blue-700 hover:text-blue-900 font-semibold flex items-center gap-1">
+      {/* Two Administrative Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Table 1: Recent Documents */}
+        <div className="bg-white border border-slate-300 rounded">
+          <div className="px-3.5 py-2.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-slate-600" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                Recent Documents
+              </h2>
+            </div>
+            <Link
+              to="/documents"
+              className="text-xs text-blue-700 hover:text-blue-900 font-semibold flex items-center gap-1"
+            >
               View all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          }
-          bodyClassName="p-0"
-        >
+          </div>
+
           {loading ? (
-            <div className="p-8 text-center text-xs text-slate-500">Loading records...</div>
+            <div className="p-6 text-center text-xs text-slate-500">Loading documents...</div>
           ) : recentDocuments.length === 0 ? (
-            <div className="p-8">
-              <EmptyState
-                type="documents"
-                title="No recent documents"
-                message="No recent document activities available in the system."
-              />
-            </div>
+            <div className="p-6 text-center text-xs text-slate-500">No recent documents available.</div>
           ) : (
-            <div className="divide-y divide-slate-100 overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs divide-y divide-slate-100">
+                <thead className="bg-slate-50 text-slate-600 font-semibold text-[11px]">
                   <tr>
-                    <th className="py-2.5 px-4 font-semibold">Document ID</th>
-                    <th className="py-2.5 px-4 font-semibold">District</th>
-                    <th className="py-2.5 px-4 font-semibold">Status</th>
-                    <th className="py-2.5 px-4 font-semibold text-right">Confidence</th>
+                    <th className="py-2 px-3">Document ID</th>
+                    <th className="py-2 px-3">Jurisdiction</th>
+                    <th className="py-2 px-3">Status</th>
+                    <th className="py-2 px-3 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
-                  {recentDocuments.map((doc, idx) => (
-                    <tr key={doc._id || doc.id || idx} className="hover:bg-slate-50/80">
-                      <td className="py-3 px-4 font-medium text-slate-900">
-                        {doc.documentNumber || doc.title || doc._id || `DOC-${idx + 1}`}
-                      </td>
-                      <td className="py-3 px-4 text-slate-600">{doc.district || '—'}</td>
-                      <td className="py-3 px-4">
-                        <Badge status={doc.status || doc.processingStatus || 'PENDING'} size="sm" />
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-700">
-                        {doc.confidence !== undefined ? `${Number(doc.confidence).toFixed(1)}%` : '—'}
-                      </td>
-                    </tr>
-                  ))}
+                  {recentDocuments.slice(0, 5).map((doc, idx) => {
+                    const id = doc._id || doc.id || idx;
+                    return (
+                      <tr key={id} className="hover:bg-slate-50/60">
+                        <td className="py-2 px-3">
+                          <span className="font-mono font-medium text-slate-900 block">
+                            {doc.documentId || doc.originalName || `DOC-${String(id).slice(0, 8)}`}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {doc.documentType || 'Land Record'}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-slate-600">
+                          {doc.district ? `${doc.district} • ${doc.tehsil || '—'}` : '—'}
+                        </td>
+                        <td className="py-2 px-3">
+                          <Badge status={doc.verificationStatus || doc.processingStatus || 'PENDING'} size="xs" />
+                        </td>
+                        <td className="py-2 px-3 text-right">
+                          <Link to="/documents">
+                            <Button variant="secondary" size="xs" icon={Eye}>
+                              View
+                            </Button>
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
-        </Card>
+        </div>
 
-        {/* Recent Activity */}
-        <Card
-          title="Recent Activity"
-          actions={
-            <Link to="/audit-logs" className="text-xs text-blue-700 hover:text-blue-900 font-semibold flex items-center gap-1">
-              View all <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          }
-          bodyClassName="p-0"
-        >
-          {loading ? (
-            <div className="p-8 text-center text-xs text-slate-500">Loading audit log...</div>
-          ) : recentActivities.length === 0 ? (
-            <div className="p-8">
-              <EmptyState
-                type="audit"
-                title="No recent audit logs"
-                message="No administrative or operational activities logged yet."
-              />
+        {/* Table 2: Human-readable Recent System Activity */}
+        <div className="bg-white border border-slate-300 rounded">
+          <div className="px-3.5 py-2.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-slate-600" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                Recent System Activity
+              </h2>
             </div>
+            <Link
+              to="/audit-logs"
+              className="text-xs text-blue-700 hover:text-blue-900 font-semibold flex items-center gap-1"
+            >
+              Audit Trail <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="p-6 text-center text-xs text-slate-500">Loading activity trail...</div>
+          ) : recentActivities.length === 0 ? (
+            <div className="p-6 text-center text-xs text-slate-500">No system activities logged yet.</div>
           ) : (
-            <div className="divide-y divide-slate-100">
-              {recentActivities.slice(0, 5).map((act, idx) => (
-                <div key={act._id || act.id || idx} className="p-4 flex items-start gap-3 text-xs">
-                  <div className="w-7 h-7 rounded bg-slate-100 text-navy-800 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
-                    {act.action ? act.action.substring(0, 2).toUpperCase() : 'EV'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-slate-800">{act.action || 'Activity'}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        {act.timestamp ? new Date(act.timestamp).toLocaleTimeString() : '—'}
-                      </span>
+            <div className="divide-y divide-slate-100 overflow-y-auto max-h-[360px]">
+              {recentActivities.slice(0, 6).map((act, idx) => {
+                const id = act._id || act.id || idx;
+                const readableAction = formatActivityAction(act.action);
+                const userName = act.user?.name || act.user?.email || (typeof act.user === 'string' ? act.user : 'System');
+                const timeStr = act.timestamp
+                  ? new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  : '—';
+
+                return (
+                  <div key={id} className="p-2.5 text-xs hover:bg-slate-50/50 flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-800">{readableAction}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">{timeStr}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-0.5 truncate">
+                        {act.description || act.message || `Action executed on ${act.entityType || 'record'}`}
+                      </p>
                     </div>
-                    <p className="text-slate-600 mt-0.5 line-clamp-1">{act.description || act.message || 'Action executed'}</p>
-                    <div className="mt-1 text-[11px] text-slate-400">
-                      User: <span className="font-medium text-slate-600">{act.user?.name || act.user?.email || act.userId || 'System'}</span>
+                    <div className="text-right text-[11px] text-slate-500 shrink-0 font-medium">
+                      {userName}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
-        </Card>
-      </div>
-
-      {/* Quick Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-        <Link
-          to="/analytics/digitization"
-          className="p-4 rounded-xl border border-slate-200 bg-white hover:border-navy-300 hover:shadow-sm transition-all group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-navy-50 text-navy-800 flex items-center justify-center group-hover:bg-navy-900 group-hover:text-white transition-colors">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-navy-950">Digitization Analytics</h4>
-            </div>
-          </div>
-        </Link>
-
-        <Link
-          to="/analytics/verification"
-          className="p-4 rounded-xl border border-slate-200 bg-white hover:border-emerald-300 hover:shadow-sm transition-all group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center group-hover:bg-emerald-800 group-hover:text-white transition-colors">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-navy-950">Verification Analytics</h4>
-            </div>
-          </div>
-        </Link>
-
-        <Link
-          to="/users"
-          className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-800 flex items-center justify-center group-hover:bg-blue-800 group-hover:text-white transition-colors">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-navy-950">User Management</h4>
-            </div>
-          </div>
-        </Link>
+        </div>
       </div>
     </div>
   );

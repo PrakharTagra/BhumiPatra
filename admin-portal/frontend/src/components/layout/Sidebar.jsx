@@ -13,38 +13,17 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  {
-    category: 'Core Operations',
-    items: [
-      { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-      { to: '/documents', label: 'Document Monitoring', icon: FileText },
-    ],
-  },
-  {
-    category: 'Analytics & Insights',
-    items: [
-      { to: '/analytics/digitization', label: 'Digitization Analytics', icon: BarChart2 },
-      { to: '/analytics/verification', label: 'Verification Analytics', icon: CheckCircle2 },
-    ],
-  },
-  {
-    category: 'Administration & Governance',
-    items: [
-      { to: '/users', label: 'User Management', icon: Users },
-      { to: '/audit-logs', label: 'Audit Logs', icon: ScrollText },
-      { to: '/system-activity', label: 'System Activity', icon: Activity },
-    ],
-  },
-  {
-    category: 'Settings & Identity',
-    items: [
-      { to: '/profile', label: 'Admin Profile', icon: UserCheck },
-    ],
-  },
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/documents', label: 'Document Monitoring', icon: FileText },
+  { to: '/users', label: 'User Management', icon: Users },
+  { to: '/analytics/digitization', label: 'Digitization Analytics', icon: BarChart2 },
+  { to: '/analytics/verification', label: 'Verification Analytics', icon: CheckCircle2 },
+  { to: '/audit-logs', label: 'Audit Logs', icon: ScrollText },
+  { to: '/system-activity', label: 'System Activity', icon: Activity },
+  { to: '/profile', label: 'Admin Profile', icon: UserCheck },
 ];
 
 export default function Sidebar({ isOpen, onClose, isCollapsed = false, onToggleCollapse }) {
@@ -97,57 +76,33 @@ export default function Sidebar({ isOpen, onClose, isCollapsed = false, onToggle
           </div>
         </div>
 
-        {/* Navigation list */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-          {NAV_ITEMS.map((section, idx) => (
-            <div key={idx} className="space-y-1">
-              {!isCollapsed && (
-                <div className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  {section.category}
-                </div>
-              )}
-              <nav className="mt-1 space-y-0.5">
-                {section.items.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      end={item.to === '/'}
-                      onClick={() => onClose && onClose()}
-                      title={isCollapsed ? item.label : undefined}
-                      className={({ isActive }) =>
-                        `flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
-                          isActive
-                            ? 'bg-blue-600 text-white shadow-sm font-semibold'
-                            : 'text-slate-300 hover:text-white hover:bg-navy-900'
-                        }`
-                      }
-                    >
-                      <Icon className="w-4 h-4 flex-shrink-0" />
-                      {!isCollapsed && <span>{item.label}</span>}
-                    </NavLink>
-                  );
-                })}
-              </nav>
-            </div>
-          ))}
+        {/* Flat navigation list */}
+        <div className="flex-1 overflow-y-auto px-3 py-4">
+          <nav className="space-y-1">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === '/'}
+                  onClick={() => onClose && onClose()}
+                  title={isCollapsed ? item.label : undefined}
+                  className={({ isActive }) =>
+                    `flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2 rounded text-xs font-medium transition-colors ${
+                      isActive
+                        ? 'bg-blue-800 text-white font-semibold'
+                        : 'text-slate-300 hover:text-white hover:bg-navy-900'
+                    }`
+                  }
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {!isCollapsed && <span>{item.label}</span>}
+                </NavLink>
+              );
+            })}
+          </nav>
         </div>
-
-        {/* Footer info badge */}
-        {!isCollapsed && (
-          <div className="p-3.5 border-t border-navy-800 text-[11px] text-slate-400 bg-navy-900/60">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-300">Environment</span>
-              <span className="px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 text-[10px] font-mono">
-                SECURE RBAC
-              </span>
-            </div>
-            <div className="text-[10px] text-slate-400 mt-1">
-              Build v1.0.0
-            </div>
-          </div>
-        )}
       </aside>
     </>
   );

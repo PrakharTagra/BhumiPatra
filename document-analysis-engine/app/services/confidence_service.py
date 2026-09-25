@@ -28,6 +28,8 @@ class ConfidenceService:
 
         # Gather each individual field confidence
         for name, data in field_dict.items():
+            if not isinstance(data, dict):
+                continue
             conf = float(data.get("confidence", 0.0))
             val = data.get("value")
 

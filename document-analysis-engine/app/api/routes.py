@@ -205,6 +205,10 @@ async def analyze_document(
                 ocrEngine=settings.OCR_ENGINE,
                 timestamp=datetime.now(timezone.utc).isoformat(),
             ),
+            landholders=extracted_fields.landholders,
+            landParcels=extracted_fields.landParcels,
+            mutations=extracted_fields.mutations,
+            registrations=extracted_fields.registrations,
         )
 
         logger.info(

@@ -97,47 +97,37 @@ export default function ValidationPanel({ record, validations }) {
   ];
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-navy-800" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-navy-950">
-            Automated Validation Matrix
-          </h3>
-        </div>
-        <span className="text-[10px] text-slate-400 font-mono">
-          5 Rule Engines Active
+    <div className="bg-white border border-slate-300 rounded shadow-none p-3">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-800">
+          Record Checks & Automated Validations
+        </h3>
+        <span className="text-[11px] text-slate-500">
+          5 rule validations evaluated
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        {checks.map((c) => {
-          const Icon = c.icon;
-          return (
-            <div
-              key={c.id}
-              className={`p-3 rounded-lg border text-xs flex flex-col justify-between ${
-                c.status === 'PASS'
-                  ? 'bg-emerald-50/40 border-emerald-200/80'
-                  : c.status === 'WARNING'
-                  ? 'bg-amber-50/40 border-amber-200/80'
-                  : 'bg-rose-50/40 border-rose-200/80'
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between gap-1 mb-1.5">
-                  <span className="font-semibold text-slate-800 text-[11px] leading-tight">
-                    {c.title}
-                  </span>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-slate-200 text-xs text-left">
+          <thead className="bg-slate-50 text-slate-700 font-semibold">
+            <tr>
+              <th scope="col" className="px-3 py-1.5 w-1/4">Validation Rule</th>
+              <th scope="col" className="px-3 py-1.5 w-24">Status</th>
+              <th scope="col" className="px-3 py-1.5">Observations / System Remarks</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 bg-white">
+            {checks.map((c) => (
+              <tr key={c.id} className="hover:bg-slate-50/50">
+                <td className="px-3 py-1.5 font-medium text-slate-800">{c.title}</td>
+                <td className="px-3 py-1.5">
                   <Badge status={c.status} size="xs" />
-                </div>
-                <p className="text-[11px] text-slate-600 leading-normal line-clamp-2">
-                  {c.details}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+                </td>
+                <td className="px-3 py-1.5 text-slate-600">{c.details}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

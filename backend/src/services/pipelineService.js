@@ -211,6 +211,53 @@ export const pipelineService = {
               registrationNo: extracted.registration_number?.value || null,
               remarks: extracted.registration_date?.value ? `Date: ${extracted.registration_date.value}` : null,
             },
+            landholders: Array.isArray(analysisResult.landholders) && analysisResult.landholders.length > 0
+              ? analysisResult.landholders
+              : Array.isArray(extracted.landholders) && extracted.landholders.length > 0
+              ? extracted.landholders
+              : owners.map((o, idx) => ({
+                  srNo: idx + 1,
+                  name: o.name,
+                  fatherGuardianName: o.relativeName || '',
+                  ownershipType: extracted.ownership_type?.value || 'Bhumidhar',
+                  share: o.shareRatio || (owners.length > 1 ? `1/${owners.length}` : '1/1'),
+                })),
+            landParcels: Array.isArray(analysisResult.landParcels) && analysisResult.landParcels.length > 0
+              ? analysisResult.landParcels
+              : Array.isArray(extracted.landParcels) && extracted.landParcels.length > 0
+              ? extracted.landParcels
+              : [{
+                  srNo: 1,
+                  khasraNumber: extracted.khasra_number?.value || 'Not detected',
+                  khataNumber: extracted.khata_number?.value || 'Not detected',
+                  ownerName: extracted.owner_name?.value || 'Not detected',
+                  area: extracted.area?.value != null && !isNaN(parseFloat(extracted.area.value)) ? parseFloat(extracted.area.value) : null,
+                  areaUnit: extracted.area?.unit || extracted.area_unit?.value || 'Hectare',
+                  classification: extracted.land_classification?.value || 'Agricultural',
+                  landUse: 'Cultivable',
+                }],
+            mutations: Array.isArray(analysisResult.mutations) && analysisResult.mutations.length > 0
+              ? analysisResult.mutations
+              : Array.isArray(extracted.mutations) && extracted.mutations.length > 0
+              ? extracted.mutations
+              : (extracted.mutation_number?.value ? [{
+                  srNo: 1,
+                  mutationNo: extracted.mutation_number.value,
+                  mutationDate: extracted.mutation_date?.value || 'N/A',
+                  orderAuthority: 'Tehsildar',
+                  status: 'Recorded',
+                }] : []),
+            registrations: Array.isArray(analysisResult.registrations) && analysisResult.registrations.length > 0
+              ? analysisResult.registrations
+              : Array.isArray(extracted.registrations) && extracted.registrations.length > 0
+              ? extracted.registrations
+              : (extracted.registration_number?.value ? [{
+                  srNo: 1,
+                  registrationNo: extracted.registration_number.value,
+                  registrationDate: extracted.registration_date?.value || 'N/A',
+                  subRegistrarOffice: extracted.tehsil?.value || 'Sub-Registrar Office',
+                  status: 'Registered',
+                }] : []),
             fieldLevelConfidence: confidenceData.fieldConfidences || {},
             validationResults: validationRules,
             overallConfidence: overallConf,

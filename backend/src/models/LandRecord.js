@@ -23,6 +23,53 @@ const validationResultSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const landholderItemSchema = new mongoose.Schema(
+  {
+    srNo: { type: Number, default: 1 },
+    name: { type: String, trim: true },
+    fatherGuardianName: { type: String, trim: true, default: '' },
+    ownershipType: { type: String, trim: true, default: '' },
+    share: { type: String, trim: true, default: '' },
+  },
+  { _id: false }
+);
+
+const landParcelItemSchema = new mongoose.Schema(
+  {
+    srNo: { type: Number, default: 1 },
+    khasraNumber: { type: String, trim: true },
+    khataNumber: { type: String, trim: true },
+    ownerName: { type: String, trim: true },
+    area: { type: Number, default: null },
+    areaUnit: { type: String, trim: true, default: 'Hectare' },
+    classification: { type: String, trim: true },
+    landUse: { type: String, trim: true },
+  },
+  { _id: false }
+);
+
+const mutationItemSchema = new mongoose.Schema(
+  {
+    srNo: { type: Number, default: 1 },
+    mutationNo: { type: String, trim: true },
+    mutationDate: { type: String, trim: true },
+    orderAuthority: { type: String, trim: true, default: 'Tehsildar' },
+    status: { type: String, trim: true, default: 'Recorded' },
+  },
+  { _id: false }
+);
+
+const registrationItemSchema = new mongoose.Schema(
+  {
+    srNo: { type: Number, default: 1 },
+    registrationNo: { type: String, trim: true },
+    registrationDate: { type: String, trim: true },
+    subRegistrarOffice: { type: String, trim: true },
+    status: { type: String, trim: true, default: 'Registered' },
+  },
+  { _id: false }
+);
+
 const landRecordSchema = new mongoose.Schema(
   {
     documentId: {
@@ -75,6 +122,22 @@ const landRecordSchema = new mongoose.Schema(
       pageNo: { type: String, trim: true },
       registrationYear: { type: Number },
       subRegistrarOffice: { type: String, trim: true },
+    },
+    landholders: {
+      type: [landholderItemSchema],
+      default: [],
+    },
+    landParcels: {
+      type: [landParcelItemSchema],
+      default: [],
+    },
+    mutations: {
+      type: [mutationItemSchema],
+      default: [],
+    },
+    registrations: {
+      type: [registrationItemSchema],
+      default: [],
     },
     fieldLevelConfidence: {
       type: Map,

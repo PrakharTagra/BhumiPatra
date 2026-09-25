@@ -76,6 +76,13 @@ class ExtractionService:
         mutation_no, mutation_date = self._extract_mutation(all_tokens, full_text)
         reg_no, reg_date = self._extract_registration(all_tokens, full_text)
 
+        # 10. Structured landholders, father/guardian, parcels, mutations, registrations
+        landholders = self._extract_landholders(all_tokens, full_text, owner, co_owners, ownership_type)
+        father_guardian = self._extract_father_guardian(all_tokens, full_text, landholders)
+        land_parcels = self._extract_land_parcels(all_tokens, full_text, khasra, khata, owner, area, area_unit, classification)
+        mutations_list = self._extract_mutations(all_tokens, full_text, mutation_no, mutation_date)
+        registrations_list = self._extract_registrations(all_tokens, full_text, reg_no, reg_date, tehsil)
+
         return ExtractedFields(
             owner_name=owner,
             co_owners=co_owners,
@@ -95,6 +102,11 @@ class ExtractionService:
             mutation_date=mutation_date,
             registration_number=reg_no,
             registration_date=reg_date,
+            father_guardian_name=father_guardian,
+            landholders=landholders,
+            landParcels=land_parcels,
+            mutations=mutations_list,
+            registrations=registrations_list,
         )
 
     def _find_matching_token(
@@ -189,17 +201,6 @@ class ExtractionService:
                     page=page,
                     evidence=m.group(0),
                 )
-
-        # In Indian revenue terminology, Khasra is the cadastre survey identifier
-        if khasra_res.value:
-            return FieldExtractionResult(
-                value=khasra_res.value,
-                confidence=float(round(khasra_res.confidence * 0.90, 2)),
-                requiresVerification=bool(khasra_res.confidence < 0.85),
-                bbox=khasra_res.bbox,
-                page=khasra_res.page,
-                evidence=f"Derived from Khasra ({khasra_res.value})",
-            )
 
         return FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
 
@@ -497,7 +498,7 @@ class ExtractionService:
     def _extract_mutation(
         self, all_tokens: List[Tuple[int, OCRToken]], text: str
     ) -> Tuple[FieldExtractionResult, FieldExtractionResult]:
-        num_pat = r'(?i)(?:दाखिल[\s]*खारिज|नामांतरण|Mutation)\s*(?:संख्या|नं\.?|No\.?|Number)?[ \t]*[:\-\n]+([0-9०-९/]+)'
+        num_pat = r'(?i)(?:दाखिल[\s]*खारिज|नामांतरण|Mutation)(?:\s*(?:संख्या|नं\.?|No\.?|Number))?[\s:-]+([0-9०-९]+(?:/[0-9०-९]+)?)'
         m_num = re.search(num_pat, text)
         num_res = None
         if m_num:
@@ -514,7 +515,7 @@ class ExtractionService:
         else:
             num_res = FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
 
-        date_pat = r'(?i)(?:Mutation[\s]*Date|आदेश[\s]*दिनांक|Order[\s]*Date|दिनांक)[:\s\n-]*\b(0[1-9]|[12][0-9]|3[01])[-/.](0[1-9]|1[012])[-/.](19\d\d|20\d\d)\b'
+        date_pat = r'(?i)(?:Mutation[\s]*Date|आदेश[\s]*दिनांक|Order[\s]*Date|दिनांक)[\s:-]*\b(0[1-9]|[12][0-9]|3[01])[-/.](0[1-9]|1[012])[-/.](19\d\d|20\d\d)\b'
         m_date = re.search(date_pat, text)
         date_res = None
         if m_date:
@@ -533,7 +534,7 @@ class ExtractionService:
     def _extract_registration(
         self, all_tokens: List[Tuple[int, OCRToken]], text: str
     ) -> Tuple[FieldExtractionResult, FieldExtractionResult]:
-        reg_pat = r'(?i)(?:पंजीकरण|Registration)\s*(?:संख्या|नं\.?|No\.?|Number)?[ \t]*[:\-\n]+([A-Za-z0-9/-]+)'
+        reg_pat = r'(?i)(?:पंजीकरण|Registration)(?:\s*(?:संख्या|नं\.?|No\.?|Number))?[\s:-]+([A-Za-z0-9/-]*[0-9][A-Za-z0-9/-]*)'
         m_reg = re.search(reg_pat, text)
         reg_res = None
         if m_reg:
@@ -569,6 +570,193 @@ class ExtractionService:
             reg_date_res = FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
 
         return reg_res, reg_date_res
+
+    def _extract_landholders(
+        self,
+        all_tokens: List[Tuple[int, OCRToken]],
+        text: str,
+        owner_res: FieldExtractionResult,
+        co_owners_res: FieldExtractionResult,
+        ownership_res: FieldExtractionResult,
+    ) -> List[Dict[str, Any]]:
+        landholders: List[Dict[str, Any]] = []
+
+        # 1. Multi-line table rows: Sr No \n Owner Name \n Father/Guardian Name \n Ownership Type \n Share
+        lh_table_pat = re.compile(
+            r'(?m)^\s*([1-9][0-9]?)\s*$\n([^\n\d/:\(\)]{2,40})\n([^\n\d/:\(\)]{2,40})\n([^\n\d/:\(\)]{2,30})\n([0-9]+/[0-9]+|[^\n]{1,15})'
+        )
+        for m in lh_table_pat.finditer(text):
+            try:
+                sr = int(m.group(1))
+                name = m.group(2).strip()
+                father = m.group(3).strip()
+                otype = m.group(4).strip()
+                share = m.group(5).strip()
+                if re.search(r'(?i)\b(Name|Father|Guardian|Ownership|Share|Khasra|Khata|Details)\b', name):
+                    continue
+                landholders.append({
+                    "srNo": sr,
+                    "name": name,
+                    "fatherGuardianName": father,
+                    "ownershipType": otype,
+                    "share": share,
+                })
+            except Exception:
+                pass
+
+        # 2. If no table rows found, fallback to synthesized primary + co-owners
+        if not landholders and owner_res.value:
+            father_cand = ""
+            f_pat = r'(?i)(?:Father(?:\'s)?\s*Name|Guardian(?:\s*Name)?|पिता(?:\s*का\s*नाम)?|पति(?:\s*का\s*नाम)?|संरक्षक(?:\s*का\s*नाम)?)\s*[:\-]\s*([^\n,/\(\)]{3,40})'
+            fm = re.search(f_pat, text)
+            if fm:
+                father_cand = fm.group(1).strip()
+
+            landholders.append({
+                "srNo": 1,
+                "name": str(owner_res.value),
+                "fatherGuardianName": father_cand,
+                "ownershipType": str(ownership_res.value) if ownership_res.value else "Bhumidhar",
+                "share": "1/1" if not (co_owners_res.value and len(co_owners_res.value)) else f"1/{len(co_owners_res.value) + 1}",
+            })
+
+            if co_owners_res.value and isinstance(co_owners_res.value, list):
+                for idx, co in enumerate(co_owners_res.value, start=2):
+                    landholders.append({
+                        "srNo": idx,
+                        "name": str(co),
+                        "fatherGuardianName": "",
+                        "ownershipType": str(ownership_res.value) if ownership_res.value else "Bhumidhar",
+                        "share": f"1/{len(co_owners_res.value) + 1}",
+                    })
+
+        return landholders
+
+    def _extract_father_guardian(
+        self,
+        all_tokens: List[Tuple[int, OCRToken]],
+        text: str,
+        landholders: List[Dict[str, Any]],
+    ) -> FieldExtractionResult:
+        if landholders and landholders[0].get("fatherGuardianName"):
+            father_val = landholders[0]["fatherGuardianName"]
+            bbox, page, ocr_conf = self._find_matching_token(all_tokens, father_val)
+            return FieldExtractionResult(
+                value=father_val,
+                confidence=float(round(min(0.96, max(0.70, ocr_conf)), 2)),
+                requiresVerification=False,
+                bbox=bbox,
+                page=page,
+                evidence=f"Father / Guardian Name: {father_val}",
+            )
+
+        f_pat = r'(?i)(?:Father(?:\'s)?\s*Name|Guardian(?:\s*Name)?|पिता(?:\s*का\s*नाम)?|पति(?:\s*का\s*नाम)?|संरक्षक(?:\s*का\s*नाम)?)\s*[:\-]\s*([^\n,/\(\)]{3,40})'
+        fm = re.search(f_pat, text)
+        if fm:
+            raw_val = fm.group(1).strip()
+            bbox, page, ocr_conf = self._find_matching_token(all_tokens, raw_val)
+            return FieldExtractionResult(
+                value=raw_val,
+                confidence=float(round(min(0.95, max(0.65, ocr_conf)), 2)),
+                requiresVerification=False,
+                bbox=bbox,
+                page=page,
+                evidence=fm.group(0)[:80],
+            )
+
+        return FieldExtractionResult(value=None, confidence=0.0, requiresVerification=True)
+
+    def _extract_land_parcels(
+        self,
+        all_tokens: List[Tuple[int, OCRToken]],
+        text: str,
+        khasra_res: FieldExtractionResult,
+        khata_res: FieldExtractionResult,
+        owner_res: FieldExtractionResult,
+        area_res: FieldExtractionResult,
+        unit_res: FieldExtractionResult,
+        classification_res: FieldExtractionResult,
+    ) -> List[Dict[str, Any]]:
+        parcels: List[Dict[str, Any]] = []
+
+        # 1. Multi-line table rows for parcels:
+        # Sr No \n Khasra No \n Khata No \n Owner Name \n Area \n Classification \n Land Use
+        parcel_table_pat = re.compile(
+            r'(?m)^\s*([1-9][0-9]?)\s*$\n([0-9०-९]+(?:/[0-9०-९]+)?)\n([0-9०-९]+)\n([^\n\d/:\(\)]{2,40})\n([0-9०-९]+(?:\.[0-9०-९]+)?)\n([^\n\d/:\(\)]{2,30})\n([^\n\d/:\(\)]{2,30})'
+        )
+        for m in parcel_table_pat.finditer(text):
+            try:
+                sr = int(m.group(1))
+                khasra = normalize_numerals(m.group(2).strip())
+                khata = normalize_numerals(m.group(3).strip())
+                owner = m.group(4).strip()
+                area_val = normalize_numerals(m.group(5).strip())
+                classif = m.group(6).strip()
+                land_use = m.group(7).strip()
+                parcels.append({
+                    "srNo": sr,
+                    "khasraNumber": khasra,
+                    "khataNumber": khata,
+                    "ownerName": owner,
+                    "area": float(area_val) if area_val.replace(".", "", 1).isdigit() else area_val,
+                    "areaUnit": unit_res.value or "Hectare",
+                    "classification": classif,
+                    "landUse": land_use,
+                })
+            except Exception:
+                pass
+
+        # 2. Fallback to primary extracted parcel if table not matched
+        if not parcels and khasra_res.value:
+            parcels.append({
+                "srNo": 1,
+                "khasraNumber": str(khasra_res.value),
+                "khataNumber": str(khata_res.value) if khata_res.value else "N/A",
+                "ownerName": str(owner_res.value) if owner_res.value else "N/A",
+                "area": float(area_res.value) if (area_res.value and str(area_res.value).replace(".", "", 1).isdigit()) else (area_res.value or "0.0"),
+                "areaUnit": str(unit_res.value) if unit_res.value else "Hectare",
+                "classification": str(classification_res.value) if classification_res.value else "Agricultural",
+                "landUse": "Cultivable",
+            })
+
+        return parcels
+
+    def _extract_mutations(
+        self,
+        all_tokens: List[Tuple[int, OCRToken]],
+        text: str,
+        mut_no_res: FieldExtractionResult,
+        mut_date_res: FieldExtractionResult,
+    ) -> List[Dict[str, Any]]:
+        mutations: List[Dict[str, Any]] = []
+        if mut_no_res.value:
+            mutations.append({
+                "srNo": 1,
+                "mutationNo": str(mut_no_res.value),
+                "mutationDate": str(mut_date_res.value) if mut_date_res.value else "N/A",
+                "orderAuthority": "Tehsildar",
+                "status": "Recorded",
+            })
+        return mutations
+
+    def _extract_registrations(
+        self,
+        all_tokens: List[Tuple[int, OCRToken]],
+        text: str,
+        reg_no_res: FieldExtractionResult,
+        reg_date_res: FieldExtractionResult,
+        tehsil_res: FieldExtractionResult,
+    ) -> List[Dict[str, Any]]:
+        registrations: List[Dict[str, Any]] = []
+        if reg_no_res.value:
+            registrations.append({
+                "srNo": 1,
+                "registrationNo": str(reg_no_res.value),
+                "registrationDate": str(reg_date_res.value) if reg_date_res.value else "N/A",
+                "subRegistrarOffice": str(tehsil_res.value) if tehsil_res.value else "Sub-Registrar Office",
+                "status": "Registered",
+            })
+        return registrations
 
 
 extraction_service = ExtractionService()

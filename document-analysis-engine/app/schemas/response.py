@@ -54,6 +54,11 @@ class ExtractedFields(BaseModel):
     mutation_date: FieldExtractionResult
     registration_number: FieldExtractionResult
     registration_date: FieldExtractionResult
+    father_guardian_name: Optional[FieldExtractionResult] = None
+    landholders: List[Dict[str, Any]] = []
+    landParcels: List[Dict[str, Any]] = []
+    mutations: List[Dict[str, Any]] = []
+    registrations: List[Dict[str, Any]] = []
 
 
 class ValidationIssue(BaseModel):
@@ -101,3 +106,7 @@ class AnalyzeResponse(BaseModel):
     validation: ValidationResult
     confidence: ConfidenceSummary
     processing: ProcessingMetadata
+    landholders: List[Dict[str, Any]] = []
+    landParcels: List[Dict[str, Any]] = []
+    mutations: List[Dict[str, Any]] = []
+    registrations: List[Dict[str, Any]] = []
