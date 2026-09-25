@@ -81,3 +81,55 @@ def test_analyze_real_pdf_document():
     assert "confidence" in payload
     assert "processing" in payload
     assert payload["processing"]["status"] == "COMPLETED"
+    # Ensure tokens and bounding boxes are populated from OCR
+    assert len(payload["ocr"]["pages"][0]["tokens"]) > 0
+    token_sample = payload["ocr"]["pages"][0]["tokens"][0]
+    assert len(token_sample["bbox"]) == 4
+    # Ensure missing fields remain None, not fabricated
+    assert payload["extractedFields"]["mutation_number"]["value"] is None
+    assert payload["extractedFields"]["registration_number"]["value"] is None
+
+
+def test_analyze_image_input():
+    import cv2
+    import numpy as np
+    img = np.ones((400, 600, 3), dtype=np.uint8) * 255
+    cv2.putText(img, "Khasra Number: 55/1", (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+    cv2.putText(img, "Khata Number: 202", (30, 140), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+    cv2.putText(img, "Owner Name: Ram Prasad", (30, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+    _, png_bytes = cv2.imencode(".png", img)
+
+    response = client.post(
+        "/analyze",
+        files={"file": ("sample_record.png", png_bytes.tobytes(), "image/png")},
+        data={"documentId": "IMG-001", "state": "Uttar Pradesh"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["success"] is True
+    assert payload["document"]["pageCount"] == 1
+    assert payload["extractedFields"]["khasra_number"]["value"] == "55/1"
+    assert payload["extractedFields"]["khata_number"]["value"] == "202"
+    assert "Ram Prasad" in str(payload["extractedFields"]["owner_name"]["value"])
+
+
+def test_analyze_multipage_pdf():
+    doc = pymupdf.open()
+    p1 = doc.new_page(width=595, height=842)
+    p1.insert_text((50, 100), "Page 1: Khata No: 184 Owner: Rajesh Kumar", fontsize=14)
+    p2 = doc.new_page(width=595, height=842)
+    p2.insert_text((50, 100), "Page 2: Khasra No: 127/2 Area: 0.8420 Hectare", fontsize=14)
+    pdf_bytes = doc.tobytes()
+    doc.close()
+
+    response = client.post(
+        "/analyze",
+        files={"file": ("multipage.pdf", pdf_bytes, "application/pdf")},
+        data={"documentId": "MULTI-001"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["success"] is True
+    assert payload["document"]["pageCount"] == 2
+    assert len(payload["ocr"]["pages"]) == 2
+    assert payload["processing"]["pagesProcessed"] == 2

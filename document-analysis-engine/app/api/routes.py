@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime, timezone
 from typing import Optional
@@ -50,6 +51,34 @@ async def get_version():
     }
 
 
+def notify_backend_stage(
+    document_id: Optional[str],
+    stage: str,
+    status_val: str,
+    duration_ms: int = 0,
+    error: Optional[str] = None
+):
+    if not document_id or not settings.NODE_BACKEND_URL:
+        return
+    url = f"{settings.NODE_BACKEND_URL.rstrip('/')}/api/documents/internal/stage-update"
+    headers = {}
+    if settings.INTERNAL_API_KEY:
+        headers["X-API-Key"] = settings.INTERNAL_API_KEY
+    payload = {
+        "documentId": document_id,
+        "stage": stage,
+        "status": status_val,
+        "durationMs": duration_ms,
+        "error": error,
+    }
+    try:
+        import httpx
+        with httpx.Client(timeout=1.0) as client:
+            client.post(url, json=payload, headers=headers)
+    except Exception as e:
+        logger.debug(f"Stage notify notice: {stage}={status_val}: {e}")
+
+
 @router.post("/analyze", response_model=AnalyzeResponse, tags=["Document Analysis"])
 async def analyze_document(
     file: UploadFile = File(..., description="Document scan (PDF, JPG, PNG, TIFF)"),
@@ -64,7 +93,7 @@ async def analyze_document(
 ):
     """
     Primary Document Analysis Pipeline:
-    Ingestion -> Preprocessing (Deskew/Clean) -> OCR (PaddleOCR) -> Field Extraction -> Confidence -> Validation
+    Ingestion -> Preprocessing (Deskew/Clean) -> OCR (RapidOCR) -> Field Extraction -> Confidence -> Validation
     """
     start_time = time.time()
     filename = file.filename or "uploaded_document"
@@ -103,6 +132,8 @@ async def analyze_document(
             )
 
         # 1. Validate MIME and extension
+        t0 = time.time()
+        notify_backend_stage(documentId, "PREPROCESSING", "STARTED")
         validate_file_metadata(filename, content_type, file_size)
 
         # 2. Ingest Document (Multi-page PDF or single-page image)
@@ -111,11 +142,19 @@ async def analyze_document(
         # 3. Preprocess each page (Orientation, Deskew, Contrast, Noise Reduction)
         for page in doc_data.pages:
             preprocessing_service.preprocess_page(page)
+        t_prep = int((time.time() - t0) * 1000)
+        notify_backend_stage(documentId, "PREPROCESSING", "SUCCESS", t_prep)
 
-        # 4. Multi-page OCR with PaddleOCR (tokens, bounding boxes, confidences)
+        # 4. Multi-page OCR with RapidOCR (tokens, bounding boxes, confidences)
+        t1 = time.time()
+        notify_backend_stage(documentId, "OCR", "STARTED")
         ocr_result = ocr_service.perform_ocr(doc_data)
+        t_ocr = int((time.time() - t1) * 1000)
+        notify_backend_stage(documentId, "OCR", "SUCCESS", t_ocr)
 
         # 5. Hybrid deterministic Land Record Field Extraction
+        t2 = time.time()
+        notify_backend_stage(documentId, "EXTRACTION", "STARTED")
         metadata = DocumentMetadataInput(
             documentId=documentId,
             documentType=documentType,
@@ -126,12 +165,22 @@ async def analyze_document(
             recordYear=recordYear,
         )
         extracted_fields = extraction_service.extract_fields(ocr_result, metadata)
+        t_ext = int((time.time() - t2) * 1000)
+        notify_backend_stage(documentId, "EXTRACTION", "SUCCESS", t_ext)
 
-        # 6. Field-level & Overall Confidence Scoring
-        confidence_summary = confidence_service.compute_confidences(extracted_fields)
-
-        # 7. Rule-based Validation (Required fields, format standards, cross-checks)
+        # 6. Rule-based Validation (Required fields, format standards, cross-checks)
+        t3 = time.time()
+        notify_backend_stage(documentId, "VALIDATION", "STARTED")
         validation_result = validation_service.validate_document(extracted_fields, metadata)
+        t_val = int((time.time() - t3) * 1000)
+        notify_backend_stage(documentId, "VALIDATION", "SUCCESS", t_val)
+
+        # 7. Field-level & Overall Confidence Scoring
+        t4 = time.time()
+        notify_backend_stage(documentId, "CONFIDENCE_ANALYSIS", "STARTED")
+        confidence_summary = confidence_service.compute_confidences(extracted_fields)
+        t_conf = int((time.time() - t4) * 1000)
+        notify_backend_stage(documentId, "CONFIDENCE_ANALYSIS", "SUCCESS", t_conf)
 
         elapsed_ms = int((time.time() - start_time) * 1000)
 
@@ -169,6 +218,7 @@ async def analyze_document(
         raise
     except Exception as e:
         elapsed_ms = int((time.time() - start_time) * 1000)
+        notify_backend_stage(documentId, "COMPLETED", "FAILED", error=str(e))
         logger.error(f"Analysis pipeline error on '{filename}': {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

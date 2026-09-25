@@ -5,13 +5,13 @@ export const USER_ROLES = {
 };
 
 export const PIPELINE_STEPS = [
-  { id: 'UPLOAD', label: 'Upload', description: 'Scanned document uploaded to secure repository' },
-  { id: 'PREPROCESSING', label: 'Preprocessing', description: 'Image deskewing, binarization, de-noising & enhancement' },
-  { id: 'OCR', label: 'OCR', description: 'Multilingual & Indic script optical character recognition' },
-  { id: 'EXTRACTION', label: 'Extraction', description: 'Named entity recognition & tabular land parcel parsing' },
-  { id: 'VALIDATION', label: 'Validation', description: 'Cross-reference checks & mathematical land area verification' },
-  { id: 'CONFIDENCE_ANALYSIS', label: 'Confidence Analysis', description: 'Field-level and document-level confidence evaluation' },
-  { id: 'COMPLETED', label: 'Completed', description: 'Digitization completed and ready for record archive' },
+  { id: 'UPLOAD', label: 'Document Received', description: 'Document scan received and stored in repository' },
+  { id: 'PREPROCESSING', label: 'Preparing Document', description: 'Contrast enhancement, deskewing, and boundary alignment' },
+  { id: 'OCR', label: 'Reading Document', description: 'Text line and character extraction from scanned pages' },
+  { id: 'EXTRACTION', label: 'Structuring Record', description: 'Parsing land parcels, cadastral numbers, and tenure holders' },
+  { id: 'VALIDATION', label: 'Validating Record', description: 'Cross-verifying boundaries, numbers, and consistency checks' },
+  { id: 'CONFIDENCE_ANALYSIS', label: 'Final Review', description: 'Calculating extraction confidence across all fields' },
+  { id: 'COMPLETED', label: 'Completed', description: 'Record structured and prepared for official verification' },
 ];
 
 export const DOCUMENT_TYPES = [

@@ -22,21 +22,24 @@ class OCRService:
 
     def _get_ocr_engine(self):
         if self._ocr_instance is None:
-            logger.info("Initializing PaddleOCR PP-OCRv6 engine...")
+            logger.info("Initializing OCR engine...")
             try:
-                # RapidOCR provides direct, optimized ONNXRuntime execution of PaddleOCR PP-OCRv6
-                from rapidocr import RapidOCR
+                from rapidocr_onnxruntime import RapidOCR
                 self._ocr_instance = RapidOCR()
-                logger.info("PaddleOCR PP-OCRv6 (ONNX) engine initialized successfully.")
-            except Exception as rapid_err:
-                logger.warning(f"RapidOCR initialization notice: {rapid_err}. Trying PaddleOCR standard...")
+                logger.info("RapidOCR (PP-OCR ONNX) engine initialized successfully.")
+            except Exception as r1_err:
                 try:
-                    from paddleocr import PaddleOCR
-                    self._ocr_instance = PaddleOCR(lang="hi", use_textline_orientation=True)
-                    logger.info("PaddleOCR standard engine initialized successfully.")
-                except Exception as paddle_err:
-                    logger.error(f"PaddleOCR standard failed: {paddle_err}")
-                    raise RuntimeError(f"OCR engine could not be started: {paddle_err}")
+                    from rapidocr import RapidOCR
+                    self._ocr_instance = RapidOCR()
+                    logger.info("RapidOCR engine initialized successfully.")
+                except Exception as r2_err:
+                    try:
+                        from paddleocr import PaddleOCR
+                        self._ocr_instance = PaddleOCR(lang="hi", use_textline_orientation=True)
+                        logger.info("PaddleOCR standard engine initialized successfully.")
+                    except Exception as paddle_err:
+                        logger.error(f"All OCR engine initializations failed: {r1_err}, {r2_err}, {paddle_err}")
+                        raise RuntimeError(f"OCR engine could not be started: {r1_err}")
 
         return self._ocr_instance
 
@@ -58,6 +61,8 @@ class OCRService:
             try:
                 # Call OCR engine
                 output = engine(target_image)
+                if isinstance(output, tuple):
+                    output = output[0]  # RapidOCR returns (result, elapse)
 
                 if output is not None and hasattr(output, 'boxes') and output.boxes is not None:
                     boxes = output.boxes
@@ -70,8 +75,6 @@ class OCRService:
                             continue
 
                         conf = float(round(float(score), 4))
-
-                        # box is 4 points: [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]
                         xs = [pt[0] for pt in box]
                         ys = [pt[1] for pt in box]
                         x1 = int(max(0, min(xs)))
@@ -92,13 +95,46 @@ class OCRService:
                         )
                         page_text_lines.append(clean_text)
 
-                elif isinstance(output, list) and output and output[0]:
-                    # Standard PaddleOCR list format fallback
-                    for line in output[0]:
-                        box = line[0]
-                        text_conf = line[1]
-                        clean_text = str(text_conf[0]).strip()
-                        conf = float(round(float(text_conf[1]), 4))
+                elif isinstance(output, list) and output:
+                    lines_to_process = output
+                    # Check for nested list structure from PaddleOCR: [[line1, line2, ...]]
+                    if len(output) == 1 and isinstance(output[0], list):
+                        if len(output[0]) == 0:
+                            lines_to_process = []
+                        elif isinstance(output[0][0], list) and len(output[0][0]) == 2 and isinstance(output[0][0][1], (list, tuple)):
+                            lines_to_process = output[0]
+
+                    for item in lines_to_process:
+                        if not item:
+                            continue
+                        box = None
+                        clean_text = ""
+                        conf = 0.8
+
+                        if len(item) == 3:
+                            # RapidOCR format: [box, text, score]
+                            box = item[0]
+                            clean_text = str(item[1]).strip()
+                            try:
+                                conf = float(round(float(item[2]), 4))
+                            except (ValueError, TypeError):
+                                conf = 0.8
+                        elif len(item) == 2:
+                            # PaddleOCR format: [box, (text, score)] or [box, text]
+                            box = item[0]
+                            text_conf = item[1]
+                            if isinstance(text_conf, (list, tuple)):
+                                clean_text = str(text_conf[0]).strip()
+                                try:
+                                    conf = float(round(float(text_conf[1]), 4))
+                                except (ValueError, TypeError):
+                                    conf = 0.8
+                            else:
+                                clean_text = str(text_conf).strip()
+                                conf = 0.8
+
+                        if not clean_text or not box:
+                            continue
 
                         xs = [pt[0] for pt in box]
                         ys = [pt[1] for pt in box]

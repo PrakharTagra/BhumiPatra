@@ -8,7 +8,7 @@ import pipelineService from '../services/pipelineService.js';
 import auditService from '../services/auditService.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 import { getPagination } from '../utils/pagination.js';
-import { ERROR_CODES, AUDIT_ACTIONS, PROCESSING_STATUS } from '../config/constants.js';
+import { ERROR_CODES, AUDIT_ACTIONS, PROCESSING_STATUS, PIPELINE_STAGES } from '../config/constants.js';
 
 function getAbsoluteFileUrl(req, fileUrl) {
   if (!fileUrl) return '';
@@ -69,6 +69,15 @@ export const documentController = {
         recordYear: Number(recordYear),
         uploadedBy: req.user._id,
         processingStatus: PROCESSING_STATUS.PENDING,
+      });
+
+      // Log initial UPLOAD stage in ProcessingLog
+      await ProcessingLog.create({
+        documentId: document._id,
+        stage: PIPELINE_STAGES.UPLOAD,
+        status: 'SUCCESS',
+        engine: 'StorageService',
+        processingTime: 0,
       });
 
       // Audit log document upload
@@ -215,20 +224,20 @@ export const documentController = {
         ? {
             parcels: [
               {
-                khasraNo: landRecord.landInformation?.khasraNo || '—',
-                khatauniNo: landRecord.landInformation?.khatauniNo || '—',
-                khewatNo: landRecord.landInformation?.khewatNo || '—',
-                area: landRecord.landInformation?.area || 0,
-                unit: landRecord.landInformation?.areaUnit || 'Acre',
-                landType: landRecord.landInformation?.landClassification || 'Agricultural',
+                khasraNo: landRecord.landInformation?.khasraNo || 'Not detected',
+                khatauniNo: landRecord.landInformation?.khatauniNo || 'Not detected',
+                khewatNo: landRecord.landInformation?.khewatNo || 'Not detected',
+                area: landRecord.landInformation?.area != null ? landRecord.landInformation.area : null,
+                unit: landRecord.landInformation?.areaUnit || 'Not detected',
+                landType: landRecord.landInformation?.landClassification || 'Not detected',
                 confidence: landRecord.overallConfidence,
               },
             ],
             owners:
               landRecord.owner?.map((o) => ({
-                name: o.name || 'Recorded Tenure Holder',
-                relation: o.relation || 'Son/Daughter of',
-                share: o.shareRatio || '100%',
+                name: o.name || 'Not detected',
+                relation: o.relation || '',
+                share: o.shareRatio || 'Not detected',
                 confidence: o.confidence || landRecord.overallConfidence,
               })) || [],
           }
@@ -276,18 +285,96 @@ export const documentController = {
         req,
       });
 
-      // Execute pipeline
-      const result = await pipelineService.runPipeline(document._id);
+      // Update initial status to PREPROCESSING
+      document.processingStatus = PROCESSING_STATUS.PREPROCESSING;
+      await document.save();
 
-      const docObj = result.document.toObject();
-      docObj.fileUrl = getAbsoluteFileUrl(req, docObj.fileUrl);
+      // Ensure UPLOAD stage exists in ProcessingLog
+      const uploadLog = await ProcessingLog.findOne({ documentId: document._id, stage: PIPELINE_STAGES.UPLOAD });
+      if (!uploadLog) {
+        await ProcessingLog.create({
+          documentId: document._id,
+          stage: PIPELINE_STAGES.UPLOAD,
+          status: 'SUCCESS',
+          engine: 'StorageService',
+          processingTime: 0,
+        });
+      }
 
-      return sendSuccess(res, {
-        document: docObj,
-        message: 'AI Processing pipeline finished successfully.',
+      // Mark PREPROCESSING as STARTED
+      await ProcessingLog.findOneAndUpdate(
+        { documentId: document._id, stage: PIPELINE_STAGES.PREPROCESSING },
+        {
+          documentId: document._id,
+          stage: PIPELINE_STAGES.PREPROCESSING,
+          status: 'STARTED',
+          engine: 'PreprocessingService',
+        },
+        { upsert: true, new: true }
+      );
+
+      // Execute pipeline asynchronously so caller gets immediate response and UI observes actual stage progress
+      pipelineService.runPipeline(document._id).catch((err) => {
+        console.error(`[Pipeline Error] Background processing failed for ${document.documentId}:`, err);
+      });
+
+      return res.status(202).json({
+        success: true,
+        documentId: document.documentId,
+        status: document.processingStatus,
+        message: 'Document processing initiated.',
       });
     } catch (error) {
       next(error);
+    }
+  },
+
+  /**
+   * Internal Stage Update from Document Analysis Engine
+   * POST /api/documents/internal/stage-update
+   */
+  async updateStageInternal(req, res, next) {
+    try {
+      const { documentId, stage, status, durationMs, error } = req.body;
+      if (!documentId || !stage) {
+        return res.status(400).json({ success: false, message: 'documentId and stage are required' });
+      }
+
+      const document = await Document.findOne({
+        $or: [{ _id: documentId.match(/^[0-9a-fA-F]{24}$/) ? documentId : null }, { documentId }],
+      });
+
+      if (!document) {
+        return res.status(404).json({ success: false, message: 'Document not found' });
+      }
+
+      if (status === 'STARTED' || status === 'IN_PROGRESS') {
+        document.processingStatus = stage;
+        await document.save();
+      } else if (status === 'FAILED') {
+        document.processingStatus = PROCESSING_STATUS.FAILED;
+        if (error) {
+          document.metadata = document.metadata || new Map();
+          document.metadata.set('failureReason', error);
+        }
+        await document.save();
+      }
+
+      await ProcessingLog.findOneAndUpdate(
+        { documentId: document._id, stage },
+        {
+          documentId: document._id,
+          stage,
+          status,
+          processingTime: durationMs || 0,
+          error: error || null,
+        },
+        { upsert: true, new: true }
+      );
+
+      return res.status(200).json({ success: true });
+    } catch (err) {
+      next(err);
     }
   },
 

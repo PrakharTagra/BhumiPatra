@@ -41,21 +41,31 @@ export const pipelineService = {
         usedPythonEngine = true;
         logger.info(`[Pipeline] Document ${document.documentId} successfully analyzed by Python Analysis Engine.`);
       } catch (engineErr) {
-        logger.warn(
-          `[Pipeline Notice] Python engine unavailable (${engineErr.message}). Initiating fallback Node.js pipeline...`
+        logger.error(`[Pipeline Error] Python analysis engine error: ${engineErr.message}`);
+        await this.logStage(
+          document._id,
+          document.processingStatus || PIPELINE_STAGES.PREPROCESSING,
+          'FAILED',
+          'Document-Analysis-Engine',
+          0,
+          engineErr.message
         );
+        document.processingStatus = PROCESSING_STATUS.FAILED;
+        document.metadata = document.metadata || new Map();
+        document.metadata.set('failureReason', 'Document processing could not be completed.');
+        await document.save();
+        throw engineErr;
       }
 
       if (usedPythonEngine && analysisResult && analysisResult.success) {
-        // --- PROCESSED BY PYTHON FASTAPI ENGINE (PaddleOCR + OpenCV) ---
         const totalDuration = analysisResult.processing?.processingTimeMs || 1000;
-        const ocrEngine = analysisResult.processing?.ocrEngine || 'PaddleOCR';
+        const ocrEngine = analysisResult.processing?.ocrEngine || 'RapidOCR';
 
         await this.logStage(
           document._id,
           PIPELINE_STAGES.PREPROCESSING,
           'SUCCESS',
-          'OpenCV-Adaptive-Deskew',
+          'PreprocessingService',
           Math.max(50, Math.round(totalDuration * 0.2))
         );
 
@@ -73,7 +83,7 @@ export const pipelineService = {
           document._id,
           PIPELINE_STAGES.EXTRACTION,
           'SUCCESS',
-          'Cadastral-Regex-Rule-Engine',
+          'ExtractionService',
           Math.max(50, Math.round(totalDuration * 0.15))
         );
 
@@ -82,7 +92,7 @@ export const pipelineService = {
           document._id,
           PIPELINE_STAGES.VALIDATION,
           'SUCCESS',
-          'Cadastral-Validation-Engine',
+          'ValidationService',
           Math.max(40, Math.round(totalDuration * 0.1))
         );
 
@@ -91,7 +101,7 @@ export const pipelineService = {
           document._id,
           PIPELINE_STAGES.CONFIDENCE_ANALYSIS,
           'SUCCESS',
-          'Composite-Scoring-Engine',
+          'ConfidenceService',
           Math.max(30, Math.round(totalDuration * 0.05))
         );
 
@@ -120,24 +130,24 @@ export const pipelineService = {
         document.metadata.set('processing', analysisResult.processing);
         await document.save();
 
-        // Build structured owners list
+        // Build structured owners list without invented defaults
         const owners = [];
         if (extracted.owner_name?.value) {
           owners.push({
             name: String(extracted.owner_name.value).trim(),
-            relation: 'Tenure Holder',
+            relation: extracted.father_guardian_name?.value ? 'Son/Daughter of' : '',
             relativeName: extracted.father_guardian_name?.value ? String(extracted.father_guardian_name.value).trim() : '',
-            shareRatio: '100%',
-            confidence: Math.round(extracted.owner_name.confidence * 100),
+            shareRatio: extracted.share_ratio?.value ? String(extracted.share_ratio.value).trim() : null,
+            confidence: Math.round((extracted.owner_name.confidence || 0) * 100),
           });
         }
         if (Array.isArray(extracted.co_owners?.value)) {
           extracted.co_owners.value.forEach((co) => {
             owners.push({
               name: String(co).trim(),
-              relation: 'Co-Sharer',
+              relation: '',
               relativeName: '',
-              shareRatio: 'Shareholder',
+              shareRatio: null,
               confidence: Math.round((extracted.co_owners.confidence || 0.8) * 100),
             });
           });
@@ -145,9 +155,9 @@ export const pipelineService = {
         if (owners.length === 0) {
           owners.push({
             name: 'Not detected',
-            relation: 'Requires verification',
+            relation: '',
             relativeName: '',
-            shareRatio: '',
+            shareRatio: null,
             confidence: 0,
           });
         }
@@ -169,7 +179,7 @@ export const pipelineService = {
           });
         }
 
-        // Upsert LandRecord
+        // Upsert LandRecord with genuine extracted data and null/Not detected semantics
         await LandRecord.findOneAndUpdate(
           { documentId: document._id },
           {
@@ -179,19 +189,19 @@ export const pipelineService = {
               khasraNo: extracted.khasra_number?.value || 'Not detected',
               khatauniNo: extracted.khata_number?.value || 'Not detected',
               khewatNo: extracted.plot_number?.value || extracted.survey_number?.value || 'Not detected',
-              area: parseFloat(extracted.area?.value) || 0,
+              area: extracted.area?.value != null && !isNaN(parseFloat(extracted.area.value)) ? parseFloat(extracted.area.value) : null,
               areaUnit: extracted.area?.unit || extracted.area_unit?.value || (extracted.area?.value ? 'Hectare' : 'Not detected'),
               landClassification: extracted.land_classification?.value || 'Not detected',
             },
             location: {
-              state: extracted.state?.value || document.state,
-              district: extracted.district?.value || document.district,
-              tehsil: extracted.tehsil?.value || document.tehsil,
-              village: extracted.village?.value || document.village,
+              state: extracted.state?.value || document.state || 'Not detected',
+              district: extracted.district?.value || document.district || 'Not detected',
+              tehsil: extracted.tehsil?.value || document.tehsil || 'Not detected',
+              village: extracted.village?.value || document.village || 'Not detected',
             },
             ownership: {
               tenureType: extracted.ownership_type?.value || 'Not detected',
-              disputeStatus: 'Clear',
+              disputeStatus: extracted.dispute_status?.value || 'Not detected',
             },
             mutation: {
               mutationNo: extracted.mutation_number?.value || null,
