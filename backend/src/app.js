@@ -11,9 +11,18 @@ import { errorHandler, notFoundHandler } from './middleware/errorMiddleware.js';
 const app = express();
 
 // 1. Security Headers via Helmet
+const defaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        ...defaultDirectives,
+        'frame-ancestors': ["'self'", ...env.CLIENT_ORIGINS, 'http://localhost:*', 'http://127.0.0.1:*'],
+      },
+    },
+    xFrameOptions: false,
   })
 );
 
@@ -46,8 +55,21 @@ app.use('/api', generalLimiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 6. Serve Uploaded Scans Statically
-app.use('/uploads', express.static(path.resolve(env.UPLOAD_DIR)));
+// 6. Serve Uploaded Scans Statically with Cross-Origin and Framing Allowed for Portals
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self' 'unsafe-inline' data: blob:; frame-ancestors 'self' http://localhost:* http://127.0.0.1:*"
+    );
+    res.removeHeader('X-Frame-Options');
+    next();
+  },
+  express.static(path.resolve(env.UPLOAD_DIR))
+);
 
 // 7. Mount Core REST API
 app.use('/api', routes);

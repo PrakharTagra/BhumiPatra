@@ -11,7 +11,9 @@ import { getPagination } from '../utils/pagination.js';
 import { ERROR_CODES, AUDIT_ACTIONS, PROCESSING_STATUS } from '../config/constants.js';
 
 function getAbsoluteFileUrl(req, fileUrl) {
-  if (!fileUrl) return '';
+  if (!fileUrl || typeof fileUrl !== 'string' || fileUrl.trim() === '' || fileUrl.trim() === '/') {
+    return '';
+  }
   if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
     return fileUrl;
   }

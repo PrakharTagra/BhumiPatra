@@ -169,44 +169,60 @@ export default function DocumentViewer({
             transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom / 100}) rotate(${rotation}deg)`,
           }}
         >
-          {documentUrl ? (
-            documentUrl.endsWith('.pdf') ? (
-              <iframe
-                src={`${documentUrl}#toolbar=0&navpanes=0`}
-                title="Land Document PDF"
-                className="w-[580px] h-[760px] bg-white rounded border border-slate-700 shadow-xl"
-              />
-            ) : (
+          {(() => {
+            const trimmedUrl = typeof documentUrl === 'string' ? documentUrl.trim() : '';
+            const hasValidUrl = Boolean(
+              trimmedUrl &&
+              trimmedUrl !== 'http://localhost:5000' &&
+              trimmedUrl !== 'http://localhost:5000/' &&
+              trimmedUrl !== '/'
+            );
+            const isPdf = hasValidUrl && (trimmedUrl.toLowerCase().includes('.pdf') || (documentType && String(documentType).toLowerCase().includes('pdf')));
+
+            if (!hasValidUrl) {
+              return (
+                <div className="w-[500px] h-[680px] bg-white rounded-lg p-8 shadow-md border border-slate-300 text-slate-800 flex flex-col justify-between">
+                  <div className="border-b border-slate-200 pb-3 text-center">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      BhumiPatra
+                    </div>
+                    <div className="text-base font-semibold text-slate-900 mt-1">
+                      Land Record Document
+                    </div>
+                    <div className="text-[10px] text-slate-500">
+                      Page {page}
+                    </div>
+                  </div>
+
+                  <div className="text-center py-20 text-slate-400 text-sm">
+                    No scanned deed image or PDF available for this record.
+                  </div>
+
+                  <div className="border-t border-slate-200 pt-3 text-[11px] text-slate-500 text-center">
+                    Document identification record pending file upload
+                  </div>
+                </div>
+              );
+            }
+
+            if (isPdf) {
+              return (
+                <iframe
+                  src={`${trimmedUrl}#toolbar=0&navpanes=0`}
+                  title="Land Document PDF"
+                  className="w-[580px] h-[760px] bg-white rounded border border-slate-700 shadow-xl"
+                />
+              );
+            }
+
+            return (
               <img
-                src={documentUrl}
+                src={trimmedUrl}
                 alt="Original Land Record Document"
                 className="max-w-[620px] max-h-[780px] w-auto h-auto object-contain rounded bg-white border border-slate-700 shadow-xl pointer-events-none"
               />
-            )
-          ) : (
-            <div className="w-[500px] h-[680px] bg-white rounded-lg p-8 shadow-md border border-slate-300 text-slate-800 flex flex-col justify-between">
-              <div className="border-b border-slate-200 pb-3 text-center">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  BhumiPatra
-                </div>
-                <div className="text-base font-semibold text-slate-900 mt-1">
-                  Land Record Document
-                </div>
-                <div className="text-[10px] text-slate-500">
-                  Page {page}
-                </div>
-              </div>
-
-              <div className="text-center py-20 text-slate-400 text-sm">
-                <FileText className="w-12 h-12 mx-auto mb-2 text-slate-300" />
-                No document file preview available
-              </div>
-
-              <div className="pt-3 border-t border-slate-200 text-center text-[10px] text-slate-400">
-                Land Record Management Portal
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Pan Guide Tooltip */}

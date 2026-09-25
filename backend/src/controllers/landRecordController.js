@@ -15,7 +15,9 @@ import {
  * Helper to build an absolute URL for a document file
  */
 function getAbsoluteFileUrl(req, fileUrl) {
-  if (!fileUrl) return '';
+  if (!fileUrl || typeof fileUrl !== 'string' || fileUrl.trim() === '' || fileUrl.trim() === '/') {
+    return '';
+  }
   if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
     return fileUrl;
   }
