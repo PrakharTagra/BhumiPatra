@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import LandRecord from '../models/LandRecord.js';
 import Document from '../models/Document.js';
 import VerificationLog from '../models/VerificationLog.js';
@@ -10,6 +11,40 @@ import {
   VERIFICATION_ACTIONS,
   AUDIT_ACTIONS,
 } from '../config/constants.js';
+
+/**
+ * Robust LandRecord finder supporting LandRecord._id, Document._id, and Document.documentId
+ */
+async function findLandRecord(id, populate = false) {
+  if (!id) return null;
+  let q = null;
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    let rec = await LandRecord.findById(id);
+    if (!rec) {
+      rec = await LandRecord.findOne({ documentId: id });
+    }
+    if (rec) {
+      if (populate) {
+        await rec.populate('documentId');
+        await rec.populate('verifiedBy', 'name email role department');
+      }
+      return rec;
+    }
+  }
+
+  // Fallback: match via Document documentId string
+  const doc = await Document.findOne({ documentId: id });
+  if (doc) {
+    const rec = await LandRecord.findOne({ documentId: doc._id });
+    if (rec && populate) {
+      await rec.populate('documentId');
+      await rec.populate('verifiedBy', 'name email role department');
+    }
+    return rec;
+  }
+
+  return null;
+}
 
 /**
  * Helper to build an absolute URL for a document file
@@ -120,6 +155,13 @@ function normalizeLandRecord(record, req) {
     reviewStatus: plain.verificationStatus,
     validations: plain.validationResults || [],
     confidenceScores: plain.fieldLevelConfidence || {},
+    extraction: {
+      landholders,
+      landParcels,
+      location: loc,
+      mutations,
+      registrations,
+    },
   };
 }
 
@@ -346,16 +388,19 @@ export const landRecordController = {
     try {
       const { id } = req.params;
 
-      const record = await LandRecord.findById(id)
-        .populate('documentId')
-        .populate('verifiedBy', 'name email role department');
+      const record = await findLandRecord(id, true);
 
       if (!record) {
         return sendError(res, `Land record with identifier '${id}' was not found.`, ERROR_CODES.NOT_FOUND, 404);
       }
 
       const normalized = normalizeLandRecord(record, req);
-      return sendSuccess(res, normalized);
+      return res.status(200).json({
+        success: true,
+        data: normalized,
+        record: normalized,
+        extraction: normalized.extraction,
+      });
     } catch (error) {
       next(error);
     }
@@ -390,7 +435,7 @@ export const landRecordController = {
 
       const actionReason = reason || remarks || 'Field correction by Verification Officer';
 
-      const record = await LandRecord.findById(id);
+      const record = await findLandRecord(id, false);
       if (!record) {
         return sendError(res, `Land record with identifier '${id}' was not found.`, ERROR_CODES.NOT_FOUND, 404);
       }
@@ -604,7 +649,7 @@ export const landRecordController = {
         req,
       });
 
-      const updatedRecord = await LandRecord.findById(id).populate('documentId');
+      const updatedRecord = await findLandRecord(record._id, true);
       return sendSuccess(res, normalizeLandRecord(updatedRecord, req));
     } catch (error) {
       next(error);
@@ -620,7 +665,7 @@ export const landRecordController = {
       const { id } = req.params;
       const reason = req.body.remarks || req.body.reason || 'Land record verified and approved';
 
-      const record = await LandRecord.findById(id);
+      const record = await findLandRecord(id, false);
       if (!record) {
         return sendError(res, `Land record with identifier '${id}' was not found.`, ERROR_CODES.NOT_FOUND, 404);
       }
@@ -655,7 +700,7 @@ export const landRecordController = {
         req,
       });
 
-      const updatedRecord = await LandRecord.findById(id).populate('documentId');
+      const updatedRecord = await findLandRecord(record._id, true);
       return sendSuccess(res, {
         record: normalizeLandRecord(updatedRecord, req),
         message: 'Land record successfully verified and approved.',
@@ -674,7 +719,7 @@ export const landRecordController = {
       const { id } = req.params;
       const reason = req.body.reason || req.body.remarks;
 
-      const record = await LandRecord.findById(id);
+      const record = await findLandRecord(id, false);
       if (!record) {
         return sendError(res, `Land record with identifier '${id}' was not found.`, ERROR_CODES.NOT_FOUND, 404);
       }
@@ -709,7 +754,7 @@ export const landRecordController = {
         req,
       });
 
-      const updatedRecord = await LandRecord.findById(id).populate('documentId');
+      const updatedRecord = await findLandRecord(record._id, true);
       return sendSuccess(res, {
         record: normalizeLandRecord(updatedRecord, req),
         message: 'Land record marked as rejected.',
@@ -728,7 +773,7 @@ export const landRecordController = {
       const { id } = req.params;
       const reason = req.body.reason || req.body.remarks;
 
-      const record = await LandRecord.findById(id);
+      const record = await findLandRecord(id, false);
       if (!record) {
         return sendError(res, `Land record with identifier '${id}' was not found.`, ERROR_CODES.NOT_FOUND, 404);
       }
@@ -781,7 +826,9 @@ export const landRecordController = {
     try {
       const { id } = req.params;
 
-      const history = await VerificationLog.find({ landRecordId: id })
+      const history = await VerificationLog.find({
+        $or: [{ landRecordId: id }, { documentId: id }],
+      })
         .sort({ createdAt: -1 })
         .populate('officerId', 'name email role department')
         .lean();

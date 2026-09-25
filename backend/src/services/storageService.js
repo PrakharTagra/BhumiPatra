@@ -44,9 +44,20 @@ class LocalStorageDriver {
    * Read file stream or buffer
    */
   async getFile(storageKey) {
-    const filePath = path.join(this.baseDir, storageKey);
+    let filePath = path.join(this.baseDir, storageKey);
     if (!fs.existsSync(filePath)) {
-      throw new Error(`File not found at storage key: ${storageKey}`);
+      const candidates = [
+        path.join(process.cwd(), 'backend', 'uploads', storageKey),
+        path.join(process.cwd(), 'uploads', storageKey),
+        path.resolve('backend/uploads', storageKey),
+        path.resolve('uploads', storageKey),
+      ];
+      const found = candidates.find(c => fs.existsSync(c));
+      if (found) {
+        filePath = found;
+      } else {
+        throw new Error(`File not found at storage key: ${storageKey}`);
+      }
     }
     return fs.promises.readFile(filePath);
   }

@@ -224,24 +224,49 @@ export const documentController = {
 
       const extractedData = landRecord
         ? {
-            parcels: [
-              {
-                khasraNo: landRecord.landInformation?.khasraNo || 'Not detected',
-                khatauniNo: landRecord.landInformation?.khatauniNo || 'Not detected',
-                khewatNo: landRecord.landInformation?.khewatNo || 'Not detected',
-                area: landRecord.landInformation?.area != null ? landRecord.landInformation.area : null,
-                unit: landRecord.landInformation?.areaUnit || 'Not detected',
-                landType: landRecord.landInformation?.landClassification || 'Not detected',
-                confidence: landRecord.overallConfidence,
-              },
-            ],
-            owners:
-              landRecord.owner?.map((o) => ({
-                name: o.name || 'Not detected',
-                relation: o.relation || '',
-                share: o.shareRatio || 'Not detected',
-                confidence: o.confidence || landRecord.overallConfidence,
-              })) || [],
+            parcels: (Array.isArray(landRecord.landParcels) && landRecord.landParcels.length > 0)
+              ? landRecord.landParcels.map((p) => ({
+                  srNo: p.srNo,
+                  khasraNo: p.khasraNumber || 'Not detected',
+                  khatauniNo: p.khataNumber || landRecord.landInformation?.khatauniNo || 'Not detected',
+                  khewatNo: p.khataNumber || 'Not detected',
+                  area: p.area != null ? p.area : null,
+                  unit: p.areaUnit || landRecord.landInformation?.areaUnit || 'Hectare',
+                  landType: p.classification || landRecord.landInformation?.landClassification || 'Not detected',
+                  landUse: p.landUse || 'Cultivable',
+                  ownerName: p.ownerName || 'Not detected',
+                  confidence: landRecord.overallConfidence,
+                }))
+              : [
+                  {
+                    srNo: 1,
+                    khasraNo: landRecord.landInformation?.khasraNo || 'Not detected',
+                    khatauniNo: landRecord.landInformation?.khatauniNo || 'Not detected',
+                    khewatNo: landRecord.landInformation?.khewatNo || 'Not detected',
+                    area: landRecord.landInformation?.area != null ? landRecord.landInformation.area : null,
+                    unit: landRecord.landInformation?.areaUnit || 'Not detected',
+                    landType: landRecord.landInformation?.landClassification || 'Not detected',
+                    confidence: landRecord.overallConfidence,
+                  },
+                ],
+            owners: (Array.isArray(landRecord.landholders) && landRecord.landholders.length > 0)
+              ? landRecord.landholders.map((lh) => ({
+                  srNo: lh.srNo,
+                  name: lh.name || 'Not detected',
+                  relation: lh.fatherGuardianName || '',
+                  fatherGuardianName: lh.fatherGuardianName || '',
+                  share: lh.share || 'Not detected',
+                  ownershipType: lh.ownershipType || 'Bhumidhar',
+                  confidence: landRecord.overallConfidence,
+                }))
+              : landRecord.owner?.map((o, idx) => ({
+                  srNo: idx + 1,
+                  name: o.name || 'Not detected',
+                  relation: o.relation || '',
+                  fatherGuardianName: o.relativeName || '',
+                  share: o.shareRatio || 'Not detected',
+                  confidence: o.confidence || landRecord.overallConfidence,
+                })) || [],
           }
         : null;
 

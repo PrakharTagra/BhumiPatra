@@ -1,3 +1,4 @@
+import fs from 'fs';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -19,7 +20,11 @@ export const env = {
         'http://127.0.0.1:3000',
         'http://127.0.0.1:3001',
       ],
-  UPLOAD_DIR: process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
+  UPLOAD_DIR:
+    process.env.UPLOAD_DIR ||
+    (fs.existsSync(path.join(process.cwd(), 'backend', 'uploads'))
+      ? path.join(process.cwd(), 'backend', 'uploads')
+      : path.join(process.cwd(), 'uploads')),
   OCR_PROVIDER: process.env.OCR_PROVIDER || null,
   AI_PROVIDER: process.env.AI_PROVIDER || null,
   MAX_FILE_SIZE_MB: 50,
