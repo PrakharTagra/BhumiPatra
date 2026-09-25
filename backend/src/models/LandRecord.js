@@ -39,8 +39,8 @@ const landRecordSchema = new mongoose.Schema(
       khasraNo: { type: String, trim: true, index: true },
       khatauniNo: { type: String, trim: true, index: true },
       khewatNo: { type: String, trim: true },
-      area: { type: Number, default: 0 },
-      areaUnit: { type: String, trim: true, default: 'Acre' },
+      area: { type: Number, default: null },
+      areaUnit: { type: String, trim: true, default: null },
       landClassification: { type: String, trim: true },
       landUse: { type: String, trim: true },
       boundaries: {
@@ -61,7 +61,7 @@ const landRecordSchema = new mongoose.Schema(
       tenureType: { type: String, trim: true },
       possessoryRights: { type: String, trim: true },
       encumbrances: [{ type: String, trim: true }],
-      disputeStatus: { type: String, trim: true, default: 'Clear' },
+      disputeStatus: { type: String, trim: true, default: null },
     },
     mutation: {
       mutationNo: { type: String, trim: true },

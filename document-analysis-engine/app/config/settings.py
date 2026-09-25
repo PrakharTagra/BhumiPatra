@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     NODE_BACKEND_URL: str = "http://localhost:5000"
 
     # OCR configuration
-    OCR_ENGINE: str = "PaddleOCR"
+    OCR_ENGINE: str = "RapidOCR"
     OCR_LANGUAGES: str = "hi,en"
     OCR_USE_GPU: bool = False
 

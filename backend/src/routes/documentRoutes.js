@@ -45,4 +45,7 @@ router.post(
 // GET /api/documents/:id/status (All authenticated roles can poll status)
 router.get('/:id/status', authenticate, documentController.getDocumentStatus);
 
+// POST /api/documents/internal/stage-update (Called by Python Analysis Engine)
+router.post('/internal/stage-update', documentController.updateStageInternal);
+
 export default router;
